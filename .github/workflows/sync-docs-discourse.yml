@@ -62,7 +62,7 @@ jobs:
           DISCOURSE_URL: ${{ secrets.DISCOURSE_URL }}
           DISCOURSE_API_KEY: ${{ secrets.DISCOURSE_API_KEY }}
           DISCOURSE_API_USER: ${{ secrets.DISCOURSE_API_USER }}
-          DISCOURSE_CATEGORY_MAP: ${{ secrets.DISCOURSE_CATEGORY_MAP }}
+          DISCOURSE_CATEGORY_MAP: ${{ vars.DISCOURSE_CATEGORY_MAP }}
           FORCE_SYNC: ${{ inputs.force }}
           DRY_RUN: ${{ inputs.dry_run }}
         run: |
