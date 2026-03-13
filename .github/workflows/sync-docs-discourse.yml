@@ -1,9 +1,3 @@
-# Discourse Docs Sync — one-way push from docs/ Markdown to Discourse API.
-#
-# WARNING: This workflow is strictly for Discourse API syncing.
-# Do NOT add Zensical build steps, GitHub Pages deployment, or any
-# static-site generation to this file. Those belong in build-docs.yml.
-
 name: Sync Docs to Discourse
 
 on:
