@@ -42,7 +42,3 @@ All PRs and commits are automatically checked by GitHub Actions. Check out `.git
 
 Code is automatically checked for style by GitHub Actions as part of the automated tests. You can also run these tests yourself by running `pre-commit run --all`.
 
-
----
-
-<small>This document is version controlled - suggest changes [on github](https://github.com/sunnypilot/sunnypilot/blob/master/docs_sp/community/WORKFLOW.md).</small>

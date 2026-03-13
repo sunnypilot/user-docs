@@ -35,7 +35,7 @@ from nav_parser import NavEntry, parse_all
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DOCS_DIR = REPO_ROOT / "docs"
 ZENSICAL_TOML = REPO_ROOT / "zensical.toml"
-GITHUB_REF_NAME = os.environ.get("GITHUB_REF_NAME", "main")
+GITHUB_REF_NAME = os.environ.get("GITHUB_REF_NAME", "master")
 
 SKIP_INDEX_FILES = frozenset({"index.md", "README.md"})
 

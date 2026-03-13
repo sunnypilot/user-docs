@@ -19,7 +19,3 @@ This method allows you to install sunnypilot directly from your device's screen 
 ### [SSH Method (Command Line)](https://community.sunnypilot.ai/t/installing-sunnypilot-via-ssh-method-on-comma-3x/255)
 This method is for advanced users who prefer to use SSH to clone the sunnypilot repository and install it manually via the command line. It offeres greater control over the installation process.
 
-
----
-
-<small>This document is version controlled - suggest changes [on github](https://github.com/sunnypilot/sunnypilot/blob/master/docs_sp/setup/read-before-installing.md).</small>

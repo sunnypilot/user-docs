@@ -8,7 +8,3 @@ We welcome both pull requests and issues on [GitHub](http://github.com/sunnypilo
 * Check out the [openpilot tools](https://github.com/sunnypilot/sunnypilot/tree/master/tools)
 * Read about the [development workflow](../community/WORKFLOW.md)
 
-
----
-
-<small>This document is version controlled - suggest changes [on github](https://github.com/sunnypilot/sunnypilot/blob/master/docs_sp/getting-started/develop-sunnypilot.md).</small>
