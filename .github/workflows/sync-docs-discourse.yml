@@ -2,10 +2,7 @@ name: Sync Docs to Discourse
 
 on:
   push:
-    branches: [main]
-    paths:
-      - "docs/**"
-      - "zensical.toml"
+    branches: [master]
   workflow_dispatch:
     inputs:
       force:
