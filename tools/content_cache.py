@@ -10,7 +10,7 @@ from __future__ import annotations
 import hashlib
 from pathlib import Path
 
-DEFAULT_CACHE_DIR = Path(__file__).resolve().parent.parent.parent / ".discourse_sync_cache"
+DEFAULT_CACHE_DIR = Path(__file__).resolve().parent.parent / ".discourse_sync_cache"
 
 
 class ContentCache:
