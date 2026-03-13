@@ -3,7 +3,7 @@ name: Build Docs
 on:
   push:
     branches:
-      - main
+      - master
     paths:
       - 'docs/**'
       - 'zensical.toml'
@@ -13,7 +13,7 @@ on:
       - 'zensical.toml'
 
 concurrency:
-  group: build-docs-${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.run_id || github.head_ref || github.ref }}
+  group: build-docs-${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && github.run_id || github.head_ref || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -37,14 +37,14 @@ jobs:
       run: zensical build
 
     - uses: actions/checkout@v6
-      if: github.ref == 'refs/heads/main' && github.repository == 'sunnypilot/user-docs'
+      if: github.ref == 'refs/heads/master' && github.repository == 'sunnypilot/user-docs'
       with:
         path: sunnypilot-docs
         ssh-key: ${{ secrets.OPENPILOT_DOCS_KEY }}
         repository: sunnypilot/sunnypilot-docs
 
     - name: Push to GitHub Pages
-      if: github.ref == 'refs/heads/main' && github.repository == 'sunnypilot/user-docs'
+      if: github.ref == 'refs/heads/master' && github.repository == 'sunnypilot/user-docs'
       run: |
         set -x
 

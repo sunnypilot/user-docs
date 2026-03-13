@@ -20,6 +20,7 @@ __pycache__/
 # Claude / AI agents
 .claude/
 CLAUDE.md
+SKILL.md
 .cursorrules
 .cursor/
 .aider*
