@@ -1,0 +1,31 @@
+# Build output
+site/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+
+# Cache
+.cache/
+.docs-sync-cache.json
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Claude / AI agents
+.claude/
+CLAUDE.md
+.cursorrules
+.cursor/
+.aider*
+.copilot/
+.github/copilot/
+
+# OS
+.DS_Store
+Thumbs.db

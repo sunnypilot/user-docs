@@ -1,0 +1,66 @@
+name: Build Docs
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/**'
+      - 'zensical.toml'
+  pull_request:
+    paths:
+      - 'docs/**'
+      - 'zensical.toml'
+
+concurrency:
+  group: build-docs-${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.run_id || github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build sunnypilot docs
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        pip install uv
+        uv pip install --system zensical
+
+    - name: Build docs
+      run: zensical build
+
+    - uses: actions/checkout@v4
+      if: github.ref == 'refs/heads/main' && github.repository == 'sunnypilot/user-docs'
+      with:
+        path: sunnypilot-docs
+        ssh-key: ${{ secrets.OPENPILOT_DOCS_KEY }}
+        repository: sunnypilot/sunnypilot-docs
+
+    - name: Push to GitHub Pages
+      if: github.ref == 'refs/heads/main' && github.repository == 'sunnypilot/user-docs'
+      run: |
+        set -x
+
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+        cd sunnypilot-docs
+        git checkout --orphan tmp
+        git rm -rf .
+
+        cp -r ../site/ docs/
+
+        touch docs/.nojekyll
+        echo -n docs.sunnypilot.ai > docs/CNAME
+
+        git add -f .
+        git commit -m "build sunnypilot docs"
+
+        git push -f origin tmp:gh-pages

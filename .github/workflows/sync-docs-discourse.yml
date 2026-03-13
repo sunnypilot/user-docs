@@ -1,0 +1,85 @@
+# Discourse Docs Sync — one-way push from docs/ Markdown to Discourse API.
+#
+# WARNING: This workflow is strictly for Discourse API syncing.
+# Do NOT add Zensical build steps, GitHub Pages deployment, or any
+# static-site generation to this file. Those belong in build-docs.yml.
+
+name: Sync Docs to Discourse
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "zensical.toml"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Force re-sync all docs (bypass cache)"
+        required: false
+        default: "false"
+        type: boolean
+      dry_run:
+        description: "Dry run (no API mutations)"
+        required: false
+        default: "false"
+        type: boolean
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install uv
+          uv pip install --system zensical
+
+      - name: Run converter tests
+        run: uv run --python 3.12 python tools/test_converter.py
+
+      - name: Run discourse client tests
+        run: uv run --python 3.12 python tools/test_discourse_client.py
+
+      - name: Run sync orchestrator tests
+        run: uv run --python 3.12 python tools/test_sync_to_discourse.py
+
+  sync:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install uv
+          uv pip install --system zensical
+
+      - name: Sync docs to Discourse
+        env:
+          DISCOURSE_URL: ${{ secrets.DISCOURSE_URL }}
+          DISCOURSE_API_KEY: ${{ secrets.DISCOURSE_API_KEY }}
+          DISCOURSE_API_USER: ${{ secrets.DISCOURSE_API_USER }}
+          DISCOURSE_CATEGORY_MAP: ${{ secrets.DISCOURSE_CATEGORY_MAP }}
+          FORCE_SYNC: ${{ inputs.force }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          ARGS="--verbose"
+          if [ "$FORCE_SYNC" = "true" ]; then
+            ARGS="$ARGS --force"
+          fi
+          if [ "$DRY_RUN" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          uv run --python 3.12 python tools/sync_to_discourse.py $ARGS
