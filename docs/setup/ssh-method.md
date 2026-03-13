@@ -30,7 +30,3 @@ If you are looking to install sunnypilot via SSH, run the following commands in 
    ```sh
    sudo reboot
    ```
-
----
-
-<small>This document is version controlled - suggest changes [on github](https://github.com/sunnypilot/sunnypilot/blob/master/docs_sp/setup/ssh-method.md).</small>

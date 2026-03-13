@@ -5,7 +5,7 @@ information on features, configurations, customizations, and much more. If you
 have found an inconsistency or see room for improvement, please follow this
 guide to submit an issue on our [issue tracker].
 
-  [issue tracker]: https://github.com/sunnypilot/sunnypilot/issues
+  [issue tracker]: https://github.com/sunnypilot/user-docs/issues
 
 ## Issue template
 
@@ -96,7 +96,3 @@ of information we need to improve it.
 __We'll take it from here.__
 
 
-
----
-
-<small>This document is version controlled - suggest changes [on github](https://github.com/sunnypilot/sunnypilot/blob/master/docs_sp/community/reporting-a-docs-issue.md).</small>

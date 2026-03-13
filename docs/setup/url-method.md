@@ -15,7 +15,3 @@ The URL installation method can be done in two ways, depending on your device & 
 > 2. At the `Download` option, press `CHECK`. This will fetch the list of latest branches from the sunnypilot repository on GitHub.
 > 3. At the `Target Branch` option, press `SELECT` to open the `Target Branch` selector.
 > 4. Scroll and select the **Desired Branch** per Recommended Branches.
-
----
-
-<small>This document is version controlled - suggest changes [on github](https://github.com/sunnypilot/sunnypilot/blob/master/docs_sp/setup/url-method.md).</small>

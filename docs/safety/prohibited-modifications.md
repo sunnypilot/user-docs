@@ -13,7 +13,3 @@ The following changes are **VIOLATIONS** of the safety policy and **ARE NOT** su
 >- No auto re-engaging of <ins>**longitudinal control**</ins> (positive/negative acceleration) on brake pedal release.
 >- No disengaging on `CRUISE MAIN` in `OFF` state.
 
-
----
-
-<small>This document is version controlled - suggest changes [on github](https://github.com/sunnypilot/sunnypilot/blob/master/docs_sp/safety-information/prohibited-safety-modifications.md).</small>
