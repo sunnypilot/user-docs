@@ -12,7 +12,16 @@ The Gas Interceptor (commonly known as comma Pedal) is an aftermarket hardware d
 
 ### Toyota / Lexus
 
-The Gas Interceptor enables sunnypilot longitudinal control on Toyota and Lexus vehicles that lack factory support for direct throttle control. The gas command scaling is tuned per vehicle:
+The Gas Interceptor enables sunnypilot longitudinal control on Toyota and Lexus vehicles that lack factory support for direct throttle control.
+
+!!! info "Prerequisites (all three required)"
+    - Gas Interceptor hardware installed and detected on the CAN bus
+    - sunnypilot longitudinal control already enabled
+    - Vehicle is **not** SecOC-equipped (newer models with secure CAN authentication are excluded)
+
+When all prerequisites are met, the Gas Interceptor also enables stop-and-go capability (automatic resume from a full stop).
+
+The gas command scaling is tuned per vehicle:
 
 | Vehicle | Pedal Sensitivity | Notes |
 |---------|------------------|-------|
@@ -25,6 +34,9 @@ The maximum gas command is capped at 0.3 for safety. Wind brake compensation is 
 ### Honda / Acura
 
 Honda and Acura vehicles use a speed-dependent gas multiplier — 0.4x at standstill, linearly increasing to 1.0x at approximately 10 m/s (22 mph). This provides gentler acceleration from stops while maintaining full responsiveness at driving speeds. Wind brake compensation is also applied.
+
+!!! info "Platform Restriction"
+    The Gas Interceptor is only supported on non-Bosch Honda/Acura platforms. Bosch-equipped vehicles skip Gas Interceptor detection entirely.
 
 ## How sunnypilot Uses It
 

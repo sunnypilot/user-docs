@@ -33,6 +33,7 @@ To prevent using bad data, sunnypilot applies a sanity check:
 !!! info "Requirements"
     - Zorro Steering Sensor hardware installed on a Toyota or Lexus vehicle
     - The sensor must be properly wired to the CAN bus
+    - **Not compatible with SecOC-equipped Toyota/Lexus vehicles** (newer models with secure CAN authentication)
 
 ## Credits
 

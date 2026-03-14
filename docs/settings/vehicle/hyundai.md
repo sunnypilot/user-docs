@@ -32,6 +32,8 @@ A row of three buttons that selects a longitudinal (speed) control tuning profil
 
 On CAN-based Hyundai, Kia, and Genesis vehicles (not CAN FD), sunnypilot can integrate data from the Mando radar to enable longitudinal control. ESCC passes through AEB and FCA safety signals from the radar, preserving all factory safety systems.
 
+ESCC is automatically detected during vehicle fingerprinting when the Mando radar broadcast is present on the CAN bus. No user configuration is needed.
+
 See [Enhanced Smart Cruise Control (ESCC)](../../technical/escc.md) for technical details.
 
 !!! note "CAN Only"
@@ -50,10 +52,27 @@ Hyundai, Kia, and Genesis vehicles can provide speed limit data from two on-boar
 
 Camera-detected speed limits take priority over navigation-based limits. CAN FD vehicles use the `FR_CMR_02` message instead.
 
+Source availability depends on which CAN messages your vehicle broadcasts — this is automatically detected during fingerprinting. Not all vehicles have both sources.
+
 These on-board sources supplement OSM-based speed limits. See [Speed Limit Assist](../../features/cruise/speed-limit.md) for details.
 
 ---
 
 ## Non-SCC Vehicle Support
 
-sunnypilot supports certain Hyundai, Kia, and Genesis vehicles that lack factory Smart Cruise Control (SCC). This includes ICE, Hybrid, and EV variants. On these vehicles, sunnypilot uses alternative CAN message parsing to provide steering assistance.
+sunnypilot supports certain Hyundai, Kia, and Genesis vehicles that lack factory Smart Cruise Control (SCC). This includes ICE, Hybrid, and EV variants. On these vehicles, sunnypilot uses alternative CAN message parsing to provide steering assistance. No longitudinal control is available — steering-only.
+
+Supported Non-SCC vehicles:
+
+- Hyundai Bayon
+- Hyundai Elantra 2022
+- Hyundai Kona
+- Hyundai Kona EV
+- Kia Ceed PHEV 2022
+- Kia Forte 2019
+- Kia Forte 2021
+- Kia Seltos 2023
+- Genesis G70 2021
+
+!!! warning "Testing Status"
+    Some Non-SCC platforms are in dashcam mode (untested). These vehicles run sunnypilot in a monitoring-only mode until community testing validates full steering support.

@@ -21,7 +21,7 @@ On Chrysler, Dodge, Jeep, and RAM vehicles, [MADS](../../features/steering/mads.
 
 ## ICBM Support
 
-[Intelligent Cruise Button Management (ICBM)](../../features/cruise/icbm.md) is supported on Chrysler, Dodge, Jeep, and RAM vehicles. The button simulation approach differs by platform:
+[Intelligent Cruise Button Management (ICBM)](../../features/cruise/icbm.md) is available on all Chrysler, Dodge, Jeep, and RAM platforms. The button simulation approach differs by platform:
 
 - **RAM vehicles**: Uses direct cruise button commands
 - **Non-RAM vehicles**: Uses a counter-offset cycling pattern for button simulation
@@ -31,6 +31,8 @@ On Chrysler, Dodge, Jeep, and RAM vehicles, [MADS](../../features/steering/mads.
 ## Steer to Zero
 
 Some Chrysler/Dodge/Jeep/RAM vehicles support steering assistance down to 0 mph (no minimum steering speed requirement). On supported vehicles, sunnypilot can provide lateral control at any speed, including during stop-and-go traffic.
+
+This is automatically detected during fingerprinting — no user configuration is needed. Any vehicle broadcasting the required CAN signal qualifies.
 
 ---
 

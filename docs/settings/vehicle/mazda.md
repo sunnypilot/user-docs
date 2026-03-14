@@ -12,4 +12,4 @@ Information about sunnypilot behavior on Mazda vehicles. These notes apply when 
 
 ## ICBM Support
 
-Mazda vehicles support [Intelligent Cruise Button Management (ICBM)](../../features/cruise/icbm.md). ICBM simulates the Mazda-specific SET+ and SET- cruise buttons with a minimum interval of 200 ms between presses. This enables features like Speed Limit Assist and Smart Cruise Control on vehicles without native longitudinal control.
+Mazda vehicles support [Intelligent Cruise Button Management (ICBM)](../../features/cruise/icbm.md) on all platforms. ICBM simulates the Mazda-specific SET+ and SET- cruise buttons with a minimum interval of 200 ms between presses. This enables features like Speed Limit Assist and Smart Cruise Control on vehicles without native longitudinal control.

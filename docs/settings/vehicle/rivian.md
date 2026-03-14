@@ -12,7 +12,7 @@ Information about sunnypilot behavior on Rivian vehicles. These notes apply when
 
 ## Longitudinal Harness Upgrade
 
-Rivian vehicles can gain full longitudinal (speed) control through a custom harness upgrade that includes panda firmware flashing. When this upgrade is installed, sunnypilot gains the following capabilities:
+Rivian vehicles can gain full longitudinal (speed) control through a custom harness upgrade that includes panda firmware flashing. The upgrade is automatically detected when the harness hardware is installed — sunnypilot identifies it during fingerprinting via the park assist CAN bus. When this upgrade is detected, sunnypilot gains the following capabilities:
 
 - **Set speed control** via steering wheel buttons: short press for +/- 1 unit, long press (approximately 3 seconds) for +/- 10 km/h or +/- 5 mph
 - **Snap to current speed** by holding the stalk for 0.5 seconds

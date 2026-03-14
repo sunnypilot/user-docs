@@ -38,7 +38,10 @@ Allows some Toyota and Lexus vehicles to automatically resume from a full stop d
 
 ## Zorro Steering Sensor (ZSS)
 
-Toyota and Lexus vehicles with a Zorro Steering Sensor installed gain higher-resolution steering angle measurements. sunnypilot automatically detects the ZSS, calibrates the offset, and uses the improved angle data for lateral control.
+Toyota and Lexus vehicles with a Zorro Steering Sensor installed gain higher-resolution steering angle measurements. sunnypilot automatically detects the ZSS when the hardware broadcasts on the CAN bus — no user configuration is needed.
+
+!!! warning "SecOC Exclusion"
+    ZSS is not compatible with SecOC-equipped Toyota/Lexus vehicles (newer models with secure CAN authentication). These vehicles are automatically excluded during fingerprinting.
 
 See the [Zorro Steering Sensor (ZSS)](../../how-to/zorro-steering-sensor.md) guide for details.
 
@@ -48,16 +51,26 @@ See the [Zorro Steering Sensor (ZSS)](../../how-to/zorro-steering-sensor.md) gui
 
 Toyota and Lexus vehicles with a Gas Interceptor (commonly known as comma Pedal) installed gain longitudinal control through sunnypilot. The gas command scaling is tuned per vehicle model for optimal response.
 
+All three conditions must be met for the Gas Interceptor to be enabled:
+
+1. Gas Interceptor hardware installed and detected on the CAN bus
+2. sunnypilot longitudinal control already enabled
+3. Vehicle is not SecOC-equipped (newer models with secure CAN authentication)
+
+When enabled, the Gas Interceptor also enables stop-and-go capability (automatic resume from a full stop).
+
 See the [Gas Interceptor (comma Pedal)](../../how-to/gas-interceptor.md) guide for details.
 
 ---
 
 ## Traffic Signal Recognition (RSA)
 
-Some Toyota and Lexus vehicles broadcast speed limit data via RSA (Road Sign Assist) CAN messages. sunnypilot reads RSA1 and RSA2 messages to extract speed limits in both kph and mph formats. This data is used by [Speed Limit Assist](../../features/cruise/speed-limit.md) when available.
+sunnypilot always attempts to read RSA (Road Sign Assist) CAN messages on all Toyota and Lexus vehicles — no toggle or configuration is needed. RSA1 and RSA2 messages are read to extract speed limits in both kph and mph formats. If your vehicle's camera broadcasts RSA messages, the speed limit data appears automatically and is used by [Speed Limit Assist](../../features/cruise/speed-limit.md). If RSA messages are not present, this is silently skipped.
 
 ---
 
 ## Smart DSU
 
-Toyota and Lexus TSS 1.0 vehicles with an aftermarket Smart DSU module can gain longitudinal control override. When a Smart DSU is detected, sunnypilot adjusts its ACC interface accordingly.
+Toyota and Lexus TSS 1.0 vehicles with an aftermarket Smart DSU module can gain longitudinal control override. The Smart DSU is automatically detected during fingerprinting when the device is present on the CAN bus — no user configuration is needed.
+
+When detected, the Smart DSU enables stop-and-go capability and makes [Alpha Longitudinal](../../features/cruise/alpha-longitudinal.md) available on the vehicle.

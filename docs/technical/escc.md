@@ -38,6 +38,9 @@ ESCC preserves all factory safety systems. AEB and FCA alerts from the Mando rad
     - Hyundai, Kia, or Genesis vehicle using the **CAN** protocol (not CAN FD)
     - Vehicle must have a Mando radar that broadcasts on CAN message `0x2AB`
 
+!!! tip "Automatic Detection"
+    ESCC is automatically detected during vehicle fingerprinting when the Mando radar broadcast is present on the CAN bus. No user configuration is needed — any non-CAN FD Hyundai/Kia/Genesis vehicle with a Mando radar qualifies.
+
 !!! note "CAN FD"
     ESCC is not applicable to CAN FD vehicles. CAN FD platforms use a different communication protocol and have native SCC support through different mechanisms.
 
