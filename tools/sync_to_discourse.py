@@ -83,6 +83,35 @@ def build_footer(doc_path: str) -> str:
   )
 
 
+def _strip_markdown_tables(text: str) -> str:
+  """Remove markdown tables from text.
+
+  Tables in index pages serve as navigation, which the sidebar replaces
+  on Discourse.  Keeping both creates duplicate/confusing content in the
+  About topic.
+  """
+  result_lines: list[str] = []
+  in_table = False
+
+  for line in text.splitlines():
+    stripped = line.strip()
+    is_table_line = stripped.startswith("|") and stripped.endswith("|")
+
+    if is_table_line:
+      in_table = True
+      continue
+
+    if in_table and not stripped:
+      # Blank line after table — skip it too
+      in_table = False
+      continue
+
+    in_table = False
+    result_lines.append(line)
+
+  return "\n".join(result_lines)
+
+
 def _get_section_folder(items: list) -> str | None:
   """Extract the top-level section folder from nav items."""
   for item in items:
@@ -247,12 +276,20 @@ def _generate_sidebars(
 
       sidebar_content = "\n".join(sidebar_lines)
 
-      # Combine with index content if available
+      # Combine with index content if available.
+      # Strip markdown tables from the index body — they duplicate the
+      # sidebar navigation and create a messy About topic on Discourse.
       index_path = f"{section_folder}/index.md"
       index_body = index_contents.get(index_path, "")
 
-      if index_body:
-        combined = f"{index_body.rstrip()}\n\n{sidebar_content}\n"
+      if index_body and sidebar_content:
+        stripped = _strip_markdown_tables(index_body).rstrip()
+        if stripped:
+          combined = f"{stripped}\n\n{sidebar_content}\n"
+        else:
+          combined = f"Browse the **{section_title}** documentation:\n\n{sidebar_content}\n"
+      elif index_body:
+        combined = index_body
       else:
         # Discourse requires at least one paragraph in category descriptions
         combined = f"Browse the **{section_title}** documentation:\n\n{sidebar_content}\n"
