@@ -12,7 +12,7 @@ Information about sunnypilot behavior on Honda and Acura vehicles. These notes a
 
 ## Gas Interceptor (comma Pedal)
 
-Honda and Acura vehicles that use a Gas Interceptor (commonly known as comma Pedal) gain longitudinal control through sunnypilot. The gas command scales with vehicle speed — lower gas output at low speeds, increasing to full scale above approximately 10 m/s. Wind brake compensation is applied at higher speeds.
+Honda and Acura vehicles that use a Gas Interceptor (commonly known as comma Pedal) gain longitudinal control through sunnypilot. The accelerator command scales with vehicle speed — lower output at low speeds, increasing to full scale above approximately 10 m/s. Wind brake compensation is applied at higher speeds.
 
 !!! info "Platform Restriction"
     The Gas Interceptor is only supported on non-Bosch Honda/Acura platforms. Bosch-equipped vehicles skip Gas Interceptor detection entirely.

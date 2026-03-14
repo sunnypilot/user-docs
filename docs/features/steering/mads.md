@@ -8,7 +8,7 @@ title: Modular Assistive Driving System
 
 MADS decouples lateral (steering) and longitudinal (speed) controls. In standard openpilot, engaging cruise control activates both steering and speed control together, and disengaging turns both off. With MADS, steering assistance can remain active independently — even when cruise control is off.
 
-This means you can have lane-keeping assistance while controlling the gas and brakes yourself.
+This means you can have lane-keeping assistance while controlling acceleration and braking yourself.
 
 ## How It Works
 

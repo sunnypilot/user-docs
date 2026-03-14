@@ -14,7 +14,7 @@ Information about sunnypilot behavior on Nissan vehicles. These notes apply when
 
 The Nissan Leaf uses a dedicated safety configuration within sunnypilot to accommodate its specific CAN bus behavior. Key differences include:
 
-- **Brake and gas signals**: The Leaf uses different CAN message sources for brake and gas detection compared to other Nissan models
+- **Brake and accelerator signals**: The Leaf uses different CAN message sources for brake and accelerator detection compared to other Nissan models
 - **Seatbelt-based cancel**: Cruise control cancellation is triggered by seatbelt unbuckling rather than the standard cancel button path
 - **Dedicated safety model**: A separate safety configuration ensures correct signal boundaries for the Leaf's unique powertrain interface
 
