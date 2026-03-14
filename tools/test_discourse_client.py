@@ -269,7 +269,9 @@ def test_find_topic_by_title_exact_match(mock_urlopen: MagicMock):
   assert result["id"] == 244
   call_args = mock_urlopen.call_args[0][0]
   assert "/search.json?" in call_args.full_url
-  assert "title%3A" in call_args.full_url or "title:" in urllib.parse.unquote(call_args.full_url)
+  decoded_url = urllib.parse.unquote_plus(call_args.full_url)
+  assert "ICBM - sunnypilot Docs" in decoded_url
+  assert "tag:docs-auto-sync" in decoded_url
   print("  PASS: find_topic_by_title_exact_match")
 
 

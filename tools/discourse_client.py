@@ -157,13 +157,20 @@ class DiscourseClient:
     when find_topic_by_sync_id() returns no results (e.g. for topics
     migrated before the sync ID was introduced).
 
+    Uses exact-phrase search (``"title"``) filtered by the
+    ``docs-auto-sync`` tag to avoid matching unrelated community posts.
+    The Discourse ``title:`` search operator is unreliable and may
+    return empty results even when the topic exists.
+
     Args:
       title: The topic title to search for (exact match preferred).
 
     Returns:
       Topic dict with at least 'id' key, or None if not found.
     """
-    encoded = urllib.parse.urlencode({"q": f'title:"{title}"'})
+    encoded = urllib.parse.urlencode({
+      "q": f'"{title}" tag:docs-auto-sync',
+    })
     data = self._get(f"/search.json?{encoded}")
     if data is None:
       return None
