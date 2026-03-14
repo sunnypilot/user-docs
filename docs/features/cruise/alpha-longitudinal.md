@@ -7,7 +7,7 @@ title: Alpha Longitudinal
 !!! tip "Does this apply to my car?"
     Check the **ACC** column on the [sunnypilot supported vehicles list](https://github.com/sunnypilot/sunnypilot/blob/master/docs/CARS.md).
 
-    - **"openpilot"** — Your car has full native longitudinal control. It is always active, no toggle is needed, and **Alpha Longitudinal does not apply to you**.
+    - **"openpilot"** — Your car has full native longitudinal control. It is always active with no toggle needed. **However**, if you have installed aftermarket hardware like a [Smart DSU](../../settings/vehicle/toyota.md#smart-dsu) on a Toyota/Lexus that already has native longitudinal, the hardware changes how longitudinal is activated — you will need to enable Alpha Longitudinal for it to work. See [Hardware Mods That Require Alpha Longitudinal](#hardware-mods-that-require-alpha-longitudinal) below.
     - **"openpilot available"** — Your car can optionally use Alpha Longitudinal. Read on.
     - **"stock"** — Your car does not support sunnypilot longitudinal. However, if you have installed aftermarket hardware like a [Smart DSU](../../settings/vehicle/toyota.md#smart-dsu) or [Gas Interceptor](../../how-to/gas-interceptor.md) (Toyota/Lexus) or a [Longitudinal Harness Upgrade](../../settings/vehicle/rivian.md#longitudinal-harness-upgrade) (Rivian), these mods enable Alpha Longitudinal on your car even though it would otherwise have no longitudinal support. See [Hardware Mods That Require Alpha Longitudinal](#hardware-mods-that-require-alpha-longitudinal) below.
 
@@ -79,16 +79,18 @@ When the toggle is off or unavailable, the vehicle is always using stock longitu
 
 ## Hardware Mods That Require Alpha Longitudinal
 
-Some cars do not natively support sunnypilot longitudinal control, but aftermarket hardware can add that capability. When sunnypilot detects these hardware mods during fingerprinting, it sets `alphaLongitudinalAvailable` to true — but the user **must** then enable Alpha Longitudinal in Developer settings for the hardware to actually function. Installing the hardware alone is not enough.
+When sunnypilot detects certain aftermarket hardware during fingerprinting, it sets `alphaLongitudinalAvailable` to true. The user **must** then enable Alpha Longitudinal in Developer settings for longitudinal control to work. Installing the hardware alone is not enough.
 
 | Hardware Mod | Brand | What It Does | Details |
 |---|---|---|---|
-| **Smart DSU** | Toyota/Lexus (TSS 1.0) | Overrides the factory DSU to give sunnypilot longitudinal control and stop-and-go | [Smart DSU details](../../settings/vehicle/toyota.md#smart-dsu) |
-| **Gas Interceptor (comma Pedal)** | Toyota/Lexus | Intercepts the accelerator pedal signal to give sunnypilot longitudinal control and stop-and-go. Not compatible with SecOC vehicles. | [Gas Interceptor details](../../how-to/gas-interceptor.md) |
+| **Smart DSU** | Toyota/Lexus | Intercepts ACC commands from the factory DSU or radar, allowing sunnypilot to send its own. Enables longitudinal control and stop-and-go. | [Smart DSU details](../../settings/vehicle/toyota.md#smart-dsu) |
+| **Gas Interceptor (comma Pedal)** | Toyota/Lexus | Intercepts the accelerator pedal signal to give sunnypilot longitudinal control and stop-and-go. Requires longitudinal to already be active. Not compatible with SecOC vehicles. | [Gas Interceptor details](../../how-to/gas-interceptor.md) |
 | **Longitudinal Harness Upgrade** | Rivian | Custom harness that enables radar, BSM, and longitudinal control | [Harness Upgrade details](../../settings/vehicle/rivian.md#longitudinal-harness-upgrade) |
 
-!!! note "These cars may share a brand with natively supported models"
-    For example, many Toyota TSS2 vehicles already have native longitudinal ("openpilot" in ACC) and do not need Alpha Longitudinal at all. But a Toyota TSS 1.0 vehicle with a Smart DSU installed *does* need Alpha Longitudinal — the mod creates the capability, and the toggle activates it. The requirement depends on your specific vehicle and hardware configuration, not just the brand.
+!!! warning "Important for Toyota/Lexus owners with native longitudinal"
+    If your Toyota or Lexus already has native longitudinal support ("openpilot" in ACC) — for example, most TSS2 camera-based vehicles — installing a Smart DSU **changes how longitudinal is activated**. When sunnypilot detects a Smart DSU, it sets `alphaLongitudinalAvailable` to true, which causes the UI to gate longitudinal behind the Alpha Longitudinal toggle. This means you must enable Alpha Longitudinal in Developer settings for longitudinal to work, even though it would have been automatic without the Smart DSU installed.
+
+    This applies regardless of whether your car originally showed "openpilot", "openpilot available", or "stock" in the ACC column. If a Smart DSU is present, Alpha Longitudinal is always required.
 
 There are also **unofficial third-party hardware solutions** that allow users to retain factory FCW/AEB while using sunnypilot Longitudinal Control (Alpha). Some are officially supported in sunnypilot.
 
@@ -122,7 +124,7 @@ In openpilot, release branches **never** offer the Alpha Longitudinal toggle. In
 
 ## Summary
 
-- **Cars with "openpilot" in the ACC column already have native longitudinal — Alpha Longitudinal does not apply to them**
+- **Cars with "openpilot" in the ACC column already have native longitudinal** — Alpha Longitudinal does not apply unless you have installed aftermarket hardware (e.g., Smart DSU) that changes the activation path
 - Only cars marked **"openpilot available"** under ACC can use Alpha Longitudinal
 - Alpha Longitudinal is an opt-in bridge for vehicles where longitudinal control works but is not yet release-quality
 - Most vehicles lose factory FCW/AEB, but some retain it — check community resources for your specific car
