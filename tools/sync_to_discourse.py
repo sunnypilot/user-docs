@@ -156,6 +156,19 @@ def _resolve_topic_id(
   return None
 
 
+def _index_has_own_category(doc_path: str, config: DiscourseConfig) -> bool:
+  """Check if an index file's directory has a dedicated Discourse category.
+
+  An index at ``settings/device/index.md`` owns its category only if
+  ``settings/device`` appears in the category mapping.  If it falls back
+  to the parent ``settings`` category, the index should be treated as a
+  regular topic rather than the category About topic.
+  """
+  parts = doc_path.split("/")
+  dir_prefix = "/".join(parts[:-1])
+  return dir_prefix in config.category_mapping
+
+
 def _find_index_path(items: list) -> str | None:
   """Find the index.md path in a nav item list, if any."""
   for item in items:
@@ -354,8 +367,10 @@ def _resolve_all_topic_ids(
 
     is_index = Path(entry.path).name in SKIP_INDEX_FILES
 
-    if is_index:
-      # Index files map to category "About" topics
+    if is_index and _index_has_own_category(entry.path, config):
+      # Index files with a dedicated category map to "About" topics.
+      # Sub-section indexes without their own category fall through
+      # to regular doc resolution below.
       category_id = config.category_id_for(entry.path)
       time.sleep(1.0)
       about_topic_id = client.get_category_about_topic_id(category_id)
@@ -454,6 +469,7 @@ def sync_docs(args: argparse.Namespace) -> None:
     raw_content = file_path.read_text(encoding="utf-8")
 
     is_index = Path(entry.path).name in SKIP_INDEX_FILES
+    is_about_topic = is_index and _index_has_own_category(entry.path, config)
 
     # Convert with topic ID map for direct inter-topic links
     converted = convert(
@@ -462,7 +478,7 @@ def sync_docs(args: argparse.Namespace) -> None:
     body = converted.rstrip("\n") + build_footer(entry.path)
 
     # Always store index content for sidebar generation, even when cached
-    if is_index:
+    if is_about_topic:
       index_contents[entry.path] = body
 
     # Cache check (skipped during dry run — always resolve for verification)
@@ -478,7 +494,7 @@ def sync_docs(args: argparse.Namespace) -> None:
       extract_title(raw_content, entry.title),
     )
 
-    if is_index:
+    if is_about_topic:
       # Index files update the "About" topic for their category.
       # Each index.md maps to the most specific matching category
       # (e.g. features/cruise/index.md -> sub-category 140).
