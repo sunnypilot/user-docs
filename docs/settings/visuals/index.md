@@ -51,7 +51,7 @@ Displays a timer on the HUD when the vehicle is stopped. The timer shows how lon
 
 ## Display Road Name
 
-Shows the name of the road you are currently driving on. Requires the OSM map database to be downloaded through the [OSM panel](osm.md).
+Shows the name of the road you are currently driving on. Requires the OSM map database to be downloaded through the [OSM panel](../osm/index.md).
 
 !!! info "Toggle & Device Availability"
     Supported on: comma 3X/3 only. This feature is currently not available on comma four and cannot be forced via sunnylink.
@@ -150,4 +150,4 @@ A row of four buttons that controls the display of real-time developer metrics o
 
 ## Related Features
 
-- [HUD & Visuals](../features/display/hud-visuals.md)
+- [HUD & Visuals](../../features/display/hud-visuals.md)

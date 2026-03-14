@@ -63,6 +63,6 @@ A **SELECT** button that opens a US state selection dialog. Narrows the download
 
 ## Related Features
 
-- [OSM Maps](../features/connected/osm-maps.md)
-- [Speed Limit Assist](../features/cruise/speed-limit.md)
-- [Smart Cruise Control - Map](../features/cruise/scc-m.md)
+- [OSM Maps](../../features/connected/osm-maps.md)
+- [Speed Limit Assist](../../features/cruise/speed-limit.md)
+- [Smart Cruise Control - Map](../../features/cruise/scc-m.md)

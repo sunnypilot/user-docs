@@ -49,4 +49,4 @@ A selector that controls how long the settings interface stays open before autom
 
 ## Related Features
 
-- [Onroad Display](../features/display/onroad-display.md)
+- [Onroad Display](../../features/display/onroad-display.md)

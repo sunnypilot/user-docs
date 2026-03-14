@@ -20,4 +20,4 @@ Control the screen brightness, timeout behavior, and touch interactivity while d
 
 ## Settings Reference
 
-See [Display Settings](../../settings/display.md) for all configuration options.
+See [Display Settings](../../settings/display/index.md) for all configuration options.

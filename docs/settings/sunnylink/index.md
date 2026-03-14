@@ -65,4 +65,4 @@ Two side-by-side buttons for managing settings backups through sunnylink:
 
 ## Related Features
 
-- [sunnylink](../features/connected/sunnylink.md)
+- [sunnylink](../../features/connected/sunnylink.md)

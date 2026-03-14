@@ -31,4 +31,4 @@ Customize the heads-up display (HUD) elements and visual overlays shown on the d
 
 ## Settings Reference
 
-See [Visuals Settings](../../settings/visuals.md) for all toggle options and multi-button selectors.
+See [Visuals Settings](../../settings/visuals/index.md) for all toggle options and multi-button selectors.

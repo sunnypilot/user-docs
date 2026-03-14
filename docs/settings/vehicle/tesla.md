@@ -21,7 +21,7 @@ Allows the driver to provide limited steering input while sunnypilot is engaged,
     May cause steering oscillations below 48 km/h (30 mph) during turns. Disable this feature if you experience oscillations.
 
 !!! note "Availability"
-    Can only be changed while the device is offroad. Use "Always Offroad" in [Device Settings](../device.md) to change this while the vehicle is running.
+    Can only be changed while the device is offroad. Use "Always Offroad" in [Device Settings](../device/index.md) to change this while the vehicle is running.
 
 ---
 

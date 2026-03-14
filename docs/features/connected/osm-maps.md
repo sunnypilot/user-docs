@@ -42,4 +42,4 @@ Integrates OpenStreetMap (OSM) data to provide speed limit information, road geo
 
 ## Settings Reference
 
-See [OSM Settings](../../settings/osm.md) for all options and status information.
+See [OSM Settings](../../settings/osm/index.md) for all options and status information.

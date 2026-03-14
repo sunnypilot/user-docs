@@ -38,25 +38,25 @@ The table below shows which settings panels have on-screen controls on each plat
 
 | Panel | comma 3X/3 | comma four | sunnylink |
 |-------|:----------:|:----------:|:---------:|
-| [Device](device.md) | :material-check: | :material-check: (simplified) | :material-check: |
-| [Network](network.md) | :material-check: | :material-check: | :material-check: |
-| [sunnylink](sunnylink.md) | :material-check: | :material-close: | :material-check: |
-| [Toggles](toggles.md) | :material-check: | :material-check: (fewer items) | :material-check: |
-| [Software](software.md) | :material-check: | :material-close: | :material-check: |
-| [Models](models.md) | :material-check: | :material-close: | :material-check: |
+| [Device](device/index.md) | :material-check: | :material-check: (simplified) | :material-check: |
+| [Network](network/index.md) | :material-check: | :material-check: | :material-check: |
+| [sunnylink](sunnylink/index.md) | :material-check: | :material-close: | :material-check: |
+| [Toggles](toggles/index.md) | :material-check: | :material-check: (fewer items) | :material-check: |
+| [Software](software/index.md) | :material-check: | :material-close: | :material-check: |
+| [Models](models/index.md) | :material-check: | :material-close: | :material-check: |
 | [Steering](steering/index.md) | :material-check: | :material-close: | :material-check: |
 | [Cruise](cruise/index.md) | :material-check: | :material-close: | :material-check: |
-| [Visuals](visuals.md) | :material-check: | :material-close: | :material-check: |
-| [Display](display.md) | :material-check: | :material-close: | :material-check: |
-| [OSM](osm.md) | :material-check: | :material-close: | :material-check: |
-| [Trips](trips.md) | :material-check: | :material-close: | :material-close: (planned) |
+| [Visuals](visuals/index.md) | :material-check: | :material-close: | :material-check: |
+| [Display](display/index.md) | :material-check: | :material-close: | :material-check: |
+| [OSM](osm/index.md) | :material-check: | :material-close: | :material-check: |
+| [Trips](trips/index.md) | :material-check: | :material-close: | :material-close: (planned) |
 | [Vehicle](vehicle/index.md) | :material-check: | :material-close: | :material-check: |
-| [Firehose](firehose.md) | :material-check: | :material-check: (condensed) | :material-check: |
-| [Developer](developer.md) | :material-check: | :material-check: | :material-check: |
+| [Firehose](firehose/index.md) | :material-check: | :material-check: (condensed) | :material-check: |
+| [Developer](developer/index.md) | :material-check: | :material-check: | :material-check: |
 
 ## Onroad Visual Features Not Available on comma four
 
-The following features from the [Visuals](visuals.md) panel rely on onroad UI rendering code that only exists on comma 3X/3. These cannot be enabled on comma four:
+The following features from the [Visuals](visuals/index.md) panel rely on onroad UI rendering code that only exists on comma 3X/3. These cannot be enabled on comma four:
 
 - Enable Standstill Timer
 - Display Road Name
