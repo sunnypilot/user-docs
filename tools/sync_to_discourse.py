@@ -53,6 +53,7 @@ DISCOURSE_TITLE_OVERRIDES: dict[str, str] = {
   "features/connected/sunnylink.md": "sunnylink Connected Services",
   "features/connected/osm-maps.md": "OSM Maps Integration",
   "settings/toggles.md": "Toggles Settings",
+  "settings/toggles/index.md": "Toggles Settings",
   "settings/sunnylink.md": "sunnylink Settings",
   "setup/ssh-method.md": "SSH Installation Method",
 }
@@ -397,6 +398,21 @@ def _resolve_all_topic_ids(
       existing = {"id": mapped_id}
       resolved_via = "topic-map"
 
+    if existing is None:
+      # Title-based fallback: find topics that pre-date the sync-id system
+      # or were created outside the pipeline.
+      file_path = DOCS_DIR / entry.path
+      if file_path.exists():
+        raw = file_path.read_text(encoding="utf-8")
+        title = DISCOURSE_TITLE_OVERRIDES.get(
+          entry.path,
+          extract_title(raw, entry.title),
+        )
+        time.sleep(1.0)
+        existing = client.find_topic_by_title(title)
+        if existing is not None:
+          resolved_via = f"title ({title})"
+
     if existing is not None:
       topic_id = existing["id"]
       topic_ids[entry.path] = topic_id
@@ -593,7 +609,59 @@ def sync_docs(args: argparse.Namespace) -> None:
         print(f"  Updated: {label} -> topic {topic_id}")
         stats["updated"] += 1
     else:
-      if args.dry_run:
+      # Pre-create title check: search for an existing topic by title
+      # before attempting to create.  This catches topics that Pass 1
+      # missed (e.g. search indexing delays, topics without sync-ids).
+      time.sleep(1.0)
+      existing_by_title = client.find_topic_by_title(title)
+
+      if existing_by_title is not None:
+        found_id = existing_by_title["id"]
+        synced_topics[entry.path] = found_id
+
+        if args.dry_run:
+          cache_tag = " [cached]" if cached else ""
+          print(
+            f"  [DRY RUN] Would update (found by title){cache_tag}: "
+            f"{label}\n"
+            f"            -> topic {found_id} "
+            f"(category {category_id})\n"
+            f"            -> {config.base_url}/t/{found_id}"
+          )
+          stats["updated"] += 1
+        else:
+          post_id = client.first_post_id(found_id)
+          if post_id is None:
+            print(
+              f"  FAIL: No first post for topic {found_id}: {label}"
+            )
+            stats["failed"] += 1
+            continue
+
+          time.sleep(1.0)
+          result = client.update_post(
+            post_id, body,
+            edit_reason="Docs sync",
+          )
+          if result is None:
+            print(
+              f"  FAIL: Could not update topic {found_id}: {label}"
+            )
+            stats["failed"] += 1
+            continue
+
+          time.sleep(1.0)
+          client.update_topic(
+            found_id, title,
+            category_id=category_id,
+          )
+
+          print(
+            f"  Updated (found by title): {label} -> topic {found_id}"
+          )
+          stats["updated"] += 1
+
+      elif args.dry_run:
         cache_tag = " [cached]" if cached else ""
         print(
           f"  [DRY RUN] Would create{cache_tag}: {label}\n"
