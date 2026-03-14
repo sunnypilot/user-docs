@@ -114,6 +114,14 @@ def _resolve_topic_id(
   return None
 
 
+def _find_index_path(items: list) -> str | None:
+  """Find the index.md path in a nav item list, if any."""
+  for item in items:
+    if isinstance(item, str) and Path(item).name in SKIP_INDEX_FILES:
+      return item
+  return None
+
+
 def _walk_nav_for_sidebar(
   items: list,
   base_url: str,
@@ -125,6 +133,11 @@ def _walk_nav_for_sidebar(
 
   Sidebar items use: * Item Title: {full topic URL}
   Sections use: ## Section Title
+
+  When a sub-section contains only an index.md (no child pages), it is
+  rendered as a leaf item linking to the About topic instead of an empty
+  section heading.  This ensures the Discourse Docs plugin sidebar shows
+  all navigable sections.
   """
   for item in items:
     if isinstance(item, str):
@@ -149,12 +162,26 @@ def _walk_nav_for_sidebar(
           lines.append(f"* {title}: {base_url}/t/{topic_id}")
 
       elif isinstance(value, list):
-        # Sub-section
-        lines.append(f"## {title}")
+        # Sub-section — collect child items first to check if empty
+        child_lines: list[str] = []
         _walk_nav_for_sidebar(
           value, base_url, synced_topics, client,
-          lines,
+          child_lines,
         )
+
+        if child_lines:
+          # Has child items — render as section heading + items
+          lines.append(f"## {title}")
+          lines.extend(child_lines)
+        else:
+          # No child items (only index.md) — render as leaf link
+          index_path = _find_index_path(value)
+          if index_path:
+            topic_id = _resolve_topic_id(
+              index_path, synced_topics, client,
+            )
+            if topic_id:
+              lines.append(f"* {title}: {base_url}/t/{topic_id}")
 
 
 def _generate_sidebars(

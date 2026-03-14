@@ -129,8 +129,6 @@ nav = [
     { "Share a Route" = "how-to/share-a-route.md" },
     { "Preserve Local File Changes" = "how-to/preserve-local-changes.md" },
     { "openpilot Toolkit" = "how-to/openpilot-toolkit.md" },
-    { "Gas Interceptor (comma Pedal)" = "how-to/gas-interceptor.md" },
-    { "Zorro Steering Sensor (ZSS)" = "how-to/zorro-steering-sensor.md" },
   ]},
   { "Safety" = [
     "safety/index.md",
@@ -146,6 +144,9 @@ nav = [
     { "Recommended Branches" = "references/recommended-branches.md" },
     { "Branch Definitions" = "references/branch-definitions.md" },
     { "Enhanced Smart Cruise Control (ESCC)" = "technical/escc.md" },
+    { "Smart DSU (SDSU)" = "technical/sdsu.md" },
+    { "Gas Interceptor (comma Pedal)" = "technical/gas-interceptor.md" },
+    { "Zorro Steering Sensor (ZSS)" = "technical/zorro-steering-sensor.md" },
   ]},
   { "Community" = [
     "community/index.md",
