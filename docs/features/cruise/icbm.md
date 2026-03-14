@@ -8,11 +8,11 @@ title: Intelligent Cruise Button Management
 
 ICBM allows sunnypilot to intercept and dynamically manage your vehicle's cruise control button presses. Instead of directly changing the set speed, button presses are routed through sunnypilot's logic, enabling features like Speed Limit Assist and Smart Cruise Control on vehicles that don't natively support sunnypilot longitudinal control.
 
-This is particularly useful for vehicles where sunnypilot cannot directly control the gas and brakes — ICBM gives you many of the same benefits by intelligently managing the cruise buttons.
+This is particularly useful for vehicles where sunnypilot cannot directly control acceleration and braking — ICBM gives you many of the same benefits by intelligently managing the cruise buttons.
 
 ## When to Use
 
-ICBM is designed specifically for vehicles where sunnypilot cannot directly control the throttle and brakes (i.e., no native longitudinal control). On these vehicles, the stock cruise control system still handles all actual acceleration and deceleration. ICBM bridges the gap by intelligently managing cruise button commands so you can still benefit from sunnypilot's speed planning features.
+ICBM is designed specifically for vehicles where sunnypilot cannot directly control acceleration and braking (i.e., no native longitudinal control). On these vehicles, the stock cruise control system still handles all speed control. ICBM bridges the gap by intelligently managing cruise button commands so you can still benefit from sunnypilot's speed planning features.
 
 ## How It Works
 

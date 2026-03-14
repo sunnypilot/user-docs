@@ -15,7 +15,7 @@ Settings specific to Toyota and Lexus vehicles. These appear in the Vehicle pane
 
 ## Enforce Factory Longitudinal Control
 
-When enabled, sunnypilot does not control gas or brakes. The factory Toyota/Lexus adaptive cruise control system handles all speed control. sunnypilot still provides steering assistance.
+When enabled, sunnypilot does not control acceleration or braking. The factory Toyota/Lexus adaptive cruise control system handles all speed control. sunnypilot still provides steering assistance.
 
 Enabling this will disable sunnypilot longitudinal control, disable Alpha Longitudinal if it was enabled, and force Stop and Go Hack off. A confirmation dialog appears before activation.
 
@@ -26,7 +26,7 @@ Enabling this will disable sunnypilot longitudinal control, disable Alpha Longit
 
 ## Stop and Go Hack (Alpha)
 
-Allows some Toyota and Lexus vehicles to automatically resume from a full stop during stop-and-go traffic. Without this, you must press the resume button or tap the gas to resume.
+Allows some Toyota and Lexus vehicles to automatically resume from a full stop during stop-and-go traffic. Without this, you must press the resume button or tap the accelerator to resume.
 
 !!! warning "Alpha Feature"
     This is an alpha-quality feature. Use at your own risk.
@@ -49,7 +49,7 @@ See the [Zorro Steering Sensor (ZSS)](../../how-to/zorro-steering-sensor.md) gui
 
 ## Gas Interceptor (comma Pedal)
 
-Toyota and Lexus vehicles with a Gas Interceptor (commonly known as comma Pedal) installed gain longitudinal control through sunnypilot. The gas command scaling is tuned per vehicle model for optimal response.
+Toyota and Lexus vehicles with a Gas Interceptor (commonly known as comma Pedal) installed gain longitudinal control through sunnypilot. The accelerator command scaling is tuned per vehicle model for optimal response.
 
 All three conditions must be met for the Gas Interceptor to be enabled:
 

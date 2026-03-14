@@ -69,7 +69,7 @@ Enables a longitudinal debug mode for testing acceleration and braking maneuvers
 
 ## sunnypilot Longitudinal Control (Alpha)
 
-Enables alpha-quality longitudinal control for vehicles that do not yet have full upstream support. This replaces the car's stock adaptive cruise control with sunnypilot's own gas and brake management.
+Enables alpha-quality longitudinal control for vehicles that do not yet have full upstream support. This replaces the car's stock adaptive cruise control with sunnypilot's own acceleration and braking management.
 
 !!! warning
     Enabling this disables AEB (Automatic Emergency Braking). A confirmation dialog appears before activation.

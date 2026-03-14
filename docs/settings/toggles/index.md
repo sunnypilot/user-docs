@@ -24,7 +24,7 @@ Enables the sunnypilot driving assist system for adaptive cruise control and lan
 
 ## Experimental Mode
 
-Activates end-to-end longitudinal control with a new driving visualization. This alpha feature uses the neural network to handle gas and braking on all road types, including city streets with stop signs and traffic lights.
+Activates end-to-end longitudinal control with a new driving visualization. This alpha feature uses the neural network to handle acceleration and braking on all road types, including city streets with stop signs and traffic lights.
 
 !!! note "Availability"
     Requires longitudinal control. Not available on vehicles using stock adaptive cruise control.
@@ -33,7 +33,7 @@ Activates end-to-end longitudinal control with a new driving visualization. This
 
 ## Disengage on Accelerator Pedal
 
-When enabled, pressing the gas pedal will immediately disengage sunnypilot. When disabled, pressing the gas pedal overrides sunnypilot's speed control without disengaging the system.
+When enabled, pressing the accelerator pedal will immediately disengage sunnypilot. When disabled, pressing the accelerator pedal overrides sunnypilot's speed control without disengaging the system.
 
 ---
 
