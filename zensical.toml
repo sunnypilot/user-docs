@@ -50,6 +50,7 @@ nav = [
       { "HUD & Visuals" = "features/display/hud-visuals.md" },
     ]},
     { "Models" = "features/models.md" },
+    { "Quiet Mode" = "features/quiet-mode.md" },
     { "OSM Maps" = "features/connected/osm-maps.md" },
     { "Connected Services" = [
       "features/connected/index.md",
@@ -88,6 +89,13 @@ nav = [
       { "Toyota / Lexus" = "settings/vehicle/toyota.md" },
       { "Hyundai / Kia / Genesis" = "settings/vehicle/hyundai.md" },
       { "Subaru" = "settings/vehicle/subaru.md" },
+      { "Honda / Acura" = "settings/vehicle/honda.md" },
+      { "GM / Chevrolet" = "settings/vehicle/gm.md" },
+      { "Chrysler / Dodge / Jeep / RAM" = "settings/vehicle/chrysler.md" },
+      { "Rivian" = "settings/vehicle/rivian.md" },
+      { "Ford" = "settings/vehicle/ford.md" },
+      { "Nissan" = "settings/vehicle/nissan.md" },
+      { "Mazda" = "settings/vehicle/mazda.md" },
     ]},
     { "Firehose" = "settings/firehose.md" },
     { "Developer" = "settings/developer.md" },
@@ -97,6 +105,8 @@ nav = [
     { "Share a Route" = "how-to/share-a-route.md" },
     { "Preserve Local File Changes" = "how-to/preserve-local-changes.md" },
     { "openpilot Toolkit" = "how-to/openpilot-toolkit.md" },
+    { "Gas Interceptor (comma Pedal)" = "how-to/gas-interceptor.md" },
+    { "Zorro Steering Sensor (ZSS)" = "how-to/zorro-steering-sensor.md" },
   ]},
   { "Safety" = [
     "safety/index.md",
@@ -111,6 +121,7 @@ nav = [
     { "Developing sunnypilot" = "technical/developing-sunnypilot.md" },
     { "Recommended Branches" = "references/recommended-branches.md" },
     { "Branch Definitions" = "references/branch-definitions.md" },
+    { "Enhanced Smart Cruise Control (ESCC)" = "technical/escc.md" },
   ]},
   { "Community" = [
     "community/index.md",

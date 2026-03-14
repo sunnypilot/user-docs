@@ -12,7 +12,7 @@ Integrates OpenStreetMap (OSM) data to provide speed limit information, road geo
 
 1. Select your country (and state, if in the US)
 2. Download the map data to your device
-3. The map daemon processes the data and makes it available to driving features
+3. The map data engine (mapd), originally created by [pfeiferj](https://github.com/pfeiferj/pfeifer-pilot-patches), processes the data and makes it available to driving features
 4. Periodically check for updates to keep your map data current
 
 ## Requirements

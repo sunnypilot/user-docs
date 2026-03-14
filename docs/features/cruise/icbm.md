@@ -47,6 +47,7 @@ ICBM support varies by vehicle brand. The feature toggle only appears in setting
 | **Hyundai / Kia / Genesis** | Supported on most models with stock cruise control |
 | **Honda / Acura** | Supported on compatible models |
 | **Chrysler / Dodge / Jeep / RAM** | Supported on compatible models |
+| **Nissan** | Supported on compatible models |
 | **Mazda** | Supported on compatible models |
 
 !!! info "Not Listed?"

@@ -22,6 +22,10 @@ Onroad display customizations and HUD visual enhancements for real-time driving 
 
 Driving model selection and configuration options.
 
+## Quiet Mode
+
+Suppresses non-critical audio alerts while preserving all safety-critical warnings.
+
 ## OSM Maps
 
 OpenStreetMap data integration for speed limits, road geometry, and map-based driving features. Data is downloaded to the device and used offline.

@@ -12,7 +12,7 @@ Select and configure the driving model used by sunnypilot. Different models offe
 
 - **Model Selection** — Choose from available driving models (offroad only)
 - **Lane Turn Desire** — Enhance lane positioning during turns
-- **LAGD (Live Lateral Delay Compensation)** — Dynamically measures and compensates for steering actuator delay using real-time signal correlation
+- **LAGD (Live Learning Steer Delay)** — Dynamically measures and compensates for steering actuator delay using real-time signal correlation
 
 ## Advanced Parameters
 

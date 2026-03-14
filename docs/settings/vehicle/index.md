@@ -34,9 +34,16 @@ A legend below the vehicle name explains the color codes.
 
 After a vehicle is detected or selected, brand-specific settings appear below the vehicle selector. Only brands with configurable settings show additional items:
 
-- [Toyota / Lexus](toyota.md) - Enforce Factory Longitudinal Control, Stop and Go Hack
-- [Hyundai / Kia / Genesis](hyundai.md) - Custom Longitudinal Tuning
+- [Toyota / Lexus](toyota.md) - Enforce Factory Longitudinal Control, Stop and Go Hack, ZSS, Gas Interceptor
+- [Hyundai / Kia / Genesis](hyundai.md) - Custom Longitudinal Tuning, ESCC
 - [Subaru](subaru.md) - Stop and Go, Stop and Go for Manual Parking Brake
 - [Tesla](tesla.md) - Cooperative Steering
+- [Honda / Acura](honda.md) - Gas Interceptor, ICBM, MADS, Nidec hybrid support
+- [GM / Chevrolet](gm.md) - Non-ACC vehicle support, custom torque models
+- [Chrysler / Dodge / Jeep / RAM](chrysler.md) - MADS via LKAS, ICBM, Steer to Zero
+- [Rivian](rivian.md) - Longitudinal harness upgrade, MADS limitations
+- [Ford](ford.md) - MADS support
+- [Nissan](nissan.md) - ICBM, Leaf-specific behavior
+- [Mazda](mazda.md) - ICBM support
 
-The following brands are supported for vehicle selection but have no brand-specific settings: Honda, GM, Ford, Volkswagen, Nissan, Mazda, Chrysler, PSA, Rivian.
+The following brands are supported for vehicle selection but have no brand-specific settings page: Volkswagen, PSA.
