@@ -50,7 +50,7 @@ nav = [
       { "HUD & Visuals" = "features/display/hud-visuals.md" },
     ]},
     { "Models" = "features/models.md" },
-    { "Quiet Mode" = "features/quiet-mode.md" },
+    { "Quiet Mode Feature" = "features/quiet-mode.md" },
     { "OSM Maps" = "features/connected/osm-maps.md" },
     { "Connected Services" = [
       "features/connected/index.md",

@@ -1,8 +1,8 @@
 ---
-title: Quiet Mode
+title: Quiet Mode Feature
 ---
 
-# Quiet Mode
+# Quiet Mode Feature
 
 ## What It Does
 
