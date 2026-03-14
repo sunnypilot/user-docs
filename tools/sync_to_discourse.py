@@ -41,6 +41,14 @@ SKIP_INDEX_FILES = frozenset({"index.md", "README.md"})
 
 # Discourse rejects titles it deems "unclear" (too short, repeated letters, etc.).
 # Override with longer, more descriptive titles for affected docs.
+# Map new doc paths to their previous sync IDs so the sync can find
+# existing Discourse topics after a file is moved.  Each entry is
+# removed automatically once the topic is updated with the new sync ID.
+PATH_REDIRECTS: dict[str, str] = {
+  "technical/gas-interceptor.md": "how-to/gas-interceptor.md",
+  "technical/zorro-steering-sensor.md": "how-to/zorro-steering-sensor.md",
+}
+
 DISCOURSE_TITLE_OVERRIDES: dict[str, str] = {
   "features/connected/sunnylink.md": "sunnylink Connected Services",
   "features/connected/osm-maps.md": "OSM Maps Integration",
@@ -106,6 +114,11 @@ def _resolve_topic_id(
   # Look up via search API
   time.sleep(1.0)
   existing = client.find_topic_by_sync_id(doc_path)
+
+  if existing is None and doc_path in PATH_REDIRECTS:
+    time.sleep(1.0)
+    existing = client.find_topic_by_sync_id(PATH_REDIRECTS[doc_path])
+
   if existing:
     topic_id = existing["id"]
     synced_topics[doc_path] = topic_id
@@ -315,10 +328,17 @@ def _resolve_all_topic_ids(
           print(f"  Resolved index: {label} -> About topic {about_topic_id}")
       continue
 
-    # Normal doc: sync-id search -> topic-map fallback
+    # Normal doc: sync-id search -> redirect fallback -> topic-map fallback
     time.sleep(1.0)
     existing = client.find_topic_by_sync_id(entry.path)
     resolved_via = "sync-id"
+
+    if existing is None and entry.path in PATH_REDIRECTS:
+      old_path = PATH_REDIRECTS[entry.path]
+      time.sleep(1.0)
+      existing = client.find_topic_by_sync_id(old_path)
+      if existing is not None:
+        resolved_via = f"redirect ({old_path})"
 
     if existing is None and entry.path in config.topic_mapping:
       mapped_id = config.topic_mapping[entry.path]
