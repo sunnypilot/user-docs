@@ -57,4 +57,4 @@ A button that uninstalls sunnypilot from the device. Requires confirmation befor
 Prevents the device from checking for or applying software updates. The device remains on its current version indefinitely. A reboot prompt appears when toggling this setting.
 
 !!! note "Availability"
-    Only appears when **Show Advanced Controls** is enabled in [Developer Settings](developer.md). Can only be changed while the device is offroad.
+    Only appears when **Show Advanced Controls** is enabled in [Developer Settings](../developer/index.md). Can only be changed while the device is offroad.

@@ -19,8 +19,8 @@ Reveals additional advanced settings throughout the sunnypilot interface. Enabli
 
 Settings gated behind this toggle include:
 
-- [Models](models.md): Adjust Lane Turn Speed, Adjust Software Delay
-- [Software](software.md): Disable Updates
+- [Models](../models/index.md): Adjust Lane Turn Speed, Adjust Software Delay
+- [Software](../software/index.md): Disable Updates
 - Developer: GitHub Runner Service, copyparty Service, Quickboot Mode
 
 ---
@@ -108,7 +108,7 @@ Enables a file server on the device for downloading driving routes and logs from
 Creates a prebuilt file for accelerated boot, reducing startup time. Requires software updates to be disabled first.
 
 !!! note "Availability"
-    Only appears when **Show Advanced Controls** is enabled, the device is not on a release or development branch, and **Disable Updates** is enabled in [Software Settings](software.md).
+    Only appears when **Show Advanced Controls** is enabled, the device is not on a release or development branch, and **Disable Updates** is enabled in [Software Settings](../software/index.md).
 
 ---
 

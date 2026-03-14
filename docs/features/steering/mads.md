@@ -74,6 +74,16 @@ Some vehicles operate in **limited MADS mode** where certain settings are locked
     - Main Cruise Allowed: forced OFF
     - Unified Engagement Mode: forced ON
     - Steering Mode on Brake: forced to **Disengage**
+    - Lateral control limited to +/- 90 degrees steering angle
+
+=== "Ford"
+    MADS is toggled using the TJA (Traffic Jam Assist) button on the steering wheel.
+
+=== "Chrysler / Dodge / Jeep / RAM"
+    MADS is toggled using the LKAS button on the steering wheel. The LKAS state is tracked through the LKAS heartbeat message (non-RAM) or Center Stack button (RAM).
+
+=== "Honda / Acura"
+    When MADS is enabled but lateral control is not actively engaged, the onroad display shows dashed lane lines as a visual indicator that steering assistance is standing by.
 
 !!! note "Why these restrictions?"
     Vehicles without a full vehicle bus connection (like Tesla without the vehicle bus harness and Rivian) cannot reliably detect certain driver inputs. To maintain safety, MADS defaults to the most conservative behavior on these platforms.

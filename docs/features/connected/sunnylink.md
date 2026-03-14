@@ -64,4 +64,4 @@ sunnylink requires explicit user consent before activation. On first enable, a c
 
 ## Settings Reference
 
-See [sunnylink Settings](../../settings/sunnylink.md) for all configuration options.
+See [sunnylink Settings](../../settings/sunnylink/index.md) for all configuration options.

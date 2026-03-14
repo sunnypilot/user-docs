@@ -9,7 +9,7 @@ Download and manage OpenStreetMap (OSM) data used for speed limit lookups, curve
 **Location**: `Settings -> OSM`
 
 !!! info "Toggle & Device Availability"
-    Supported on all devices. comma four users must use sunnylink to change this setting.
+    Supported on: comma 3X/3 only. The OSM panel does not exist on the comma four UI. comma four users can configure these settings through sunnylink.
 
 ---
 
@@ -63,6 +63,6 @@ A **SELECT** button that opens a US state selection dialog. Narrows the download
 
 ## Related Features
 
-- [OSM Maps](../features/connected/osm-maps.md)
-- [Speed Limit Assist](../features/cruise/speed-limit.md)
-- [Smart Cruise Control - Map](../features/cruise/scc-m.md)
+- [OSM Maps](../../features/connected/osm-maps.md)
+- [Speed Limit Assist](../../features/cruise/speed-limit.md)
+- [Smart Cruise Control - Map](../../features/cruise/scc-m.md)

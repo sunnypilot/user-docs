@@ -63,7 +63,7 @@ When enabled, at speeds of 20 mph (32 km/h) or below with the turn signal on, th
 A selector that sets the maximum speed at which lane turn desires are active. Default is 19 mph. Use the **-** and **+** buttons to adjust.
 
 !!! note "Availability"
-    Only appears when **Use Lane Turn Desires** is enabled and **Show Advanced Controls** is enabled in [Developer Settings](developer.md).
+    Only appears when **Use Lane Turn Desires** is enabled and **Show Advanced Controls** is enabled in [Developer Settings](../developer/index.md).
 
 ---
 
@@ -80,4 +80,4 @@ The description text shows the current live delay value or a breakdown of delay 
 A selector that sets the fixed software delay value used when Live Learning Steer Delay is disabled. Default is 0.2 seconds. Use the **-** and **+** buttons to adjust.
 
 !!! note "Availability"
-    Only appears when **Live Learning Steer Delay** is disabled and **Show Advanced Controls** is enabled in [Developer Settings](developer.md).
+    Only appears when **Live Learning Steer Delay** is disabled and **Show Advanced Controls** is enabled in [Developer Settings](../developer/index.md).

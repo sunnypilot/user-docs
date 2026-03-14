@@ -44,10 +44,10 @@ ICBM support varies by vehicle brand. The feature toggle only appears in setting
 
 | Brand | Notes |
 |-------|-------|
-| **Hyundai / Kia / Genesis** | Supported on most models with stock cruise control |
-| **Honda / Acura** | Supported on compatible models |
-| **Chrysler / Dodge / Jeep / RAM** | Supported on compatible models |
-| **Mazda** | Supported on compatible models |
+| **Hyundai / Kia / Genesis** | Most CAN models. Not available on vehicles with CAN FD alternate buttons. |
+| **Honda / Acura** | Bosch non-CAN FD platforms. CAN FD Honda models may have ICBM on development branches only. |
+| **Chrysler / Dodge / Jeep / RAM** | All platforms |
+| **Mazda** | All platforms |
 
 !!! info "Not Listed?"
     If your brand or model is not listed above and the ICBM toggle does not appear in your settings, your vehicle is not currently supported. Support depends on the vehicle's CAN bus protocol and button command structure.

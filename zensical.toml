@@ -50,6 +50,7 @@ nav = [
       { "HUD & Visuals" = "features/display/hud-visuals.md" },
     ]},
     { "Models" = "features/models.md" },
+    { "Quiet Mode" = "features/quiet-mode.md" },
     { "OSM Maps" = "features/connected/osm-maps.md" },
     { "Connected Services" = [
       "features/connected/index.md",
@@ -59,12 +60,24 @@ nav = [
   { "Settings" = [
     "settings/index.md",
     { "Platform Differences" = "settings/platform-differences.md" },
-    { "Device" = "settings/device.md" },
-    { "Network" = "settings/network.md" },
-    { "sunnylink" = "settings/sunnylink.md" },
-    { "Toggles" = "settings/toggles.md" },
-    { "Software" = "settings/software.md" },
-    { "Models" = "settings/models.md" },
+    { "Device" = [
+      "settings/device/index.md",
+    ]},
+    { "Network" = [
+      "settings/network/index.md",
+    ]},
+    { "sunnylink" = [
+      "settings/sunnylink/index.md",
+    ]},
+    { "Toggles" = [
+      "settings/toggles/index.md",
+    ]},
+    { "Software" = [
+      "settings/software/index.md",
+    ]},
+    { "Models" = [
+      "settings/models/index.md",
+    ]},
     { "Steering" = [
       "settings/steering/index.md",
       { "MADS" = "settings/steering/mads.md" },
@@ -78,25 +91,46 @@ nav = [
         { "Speed Limit Source" = "settings/cruise/speed-limit/source.md" },
       ]},
     ]},
-    { "Visuals" = "settings/visuals.md" },
-    { "Display" = "settings/display.md" },
-    { "OSM" = "settings/osm.md" },
-    { "Trips" = "settings/trips.md" },
     { "Vehicle" = [
       "settings/vehicle/index.md",
+      { "Chrysler / Dodge / Jeep / RAM" = "settings/vehicle/chrysler.md" },
+      { "Ford" = "settings/vehicle/ford.md" },
+      { "GM / Chevrolet" = "settings/vehicle/gm.md" },
+      { "Honda / Acura" = "settings/vehicle/honda.md" },
+      { "Hyundai / Kia / Genesis" = "settings/vehicle/hyundai.md" },
+      { "Mazda" = "settings/vehicle/mazda.md" },
+      { "Nissan" = "settings/vehicle/nissan.md" },
+      { "Rivian" = "settings/vehicle/rivian.md" },
+      { "Subaru" = "settings/vehicle/subaru.md" },
       { "Tesla" = "settings/vehicle/tesla.md" },
       { "Toyota / Lexus" = "settings/vehicle/toyota.md" },
-      { "Hyundai / Kia / Genesis" = "settings/vehicle/hyundai.md" },
-      { "Subaru" = "settings/vehicle/subaru.md" },
     ]},
-    { "Firehose" = "settings/firehose.md" },
-    { "Developer" = "settings/developer.md" },
+    { "Visuals" = [
+      "settings/visuals/index.md",
+    ]},
+    { "Display" = [
+      "settings/display/index.md",
+    ]},
+    { "OSM" = [
+      "settings/osm/index.md",
+    ]},
+    { "Trips" = [
+      "settings/trips/index.md",
+    ]},
+    { "Firehose" = [
+      "settings/firehose/index.md",
+    ]},
+    { "Developer" = [
+      "settings/developer/index.md",
+    ]},
   ]},
   { "How-To Guides" = [
     "how-to/index.md",
     { "Share a Route" = "how-to/share-a-route.md" },
     { "Preserve Local File Changes" = "how-to/preserve-local-changes.md" },
     { "openpilot Toolkit" = "how-to/openpilot-toolkit.md" },
+    { "Gas Interceptor (comma Pedal)" = "how-to/gas-interceptor.md" },
+    { "Zorro Steering Sensor (ZSS)" = "how-to/zorro-steering-sensor.md" },
   ]},
   { "Safety" = [
     "safety/index.md",
@@ -111,6 +145,7 @@ nav = [
     { "Developing sunnypilot" = "technical/developing-sunnypilot.md" },
     { "Recommended Branches" = "references/recommended-branches.md" },
     { "Branch Definitions" = "references/branch-definitions.md" },
+    { "Enhanced Smart Cruise Control (ESCC)" = "technical/escc.md" },
   ]},
   { "Community" = [
     "community/index.md",

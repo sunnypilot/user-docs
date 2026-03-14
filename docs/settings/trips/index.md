@@ -9,7 +9,7 @@ View your cumulative and recent driving statistics.
 **Location**: `Settings -> Trips`
 
 !!! info "Toggle & Device Availability"
-    Supported on all devices. comma four users must use sunnylink to change this setting.
+    Supported on: comma 3X/3 only. The Trips panel does not exist on the comma four UI. Trip statistics will be viewable through sunnylink in a future update.
 
 ---
 
