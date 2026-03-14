@@ -8,5 +8,3 @@ Step-by-step guides for common tasks.
 
 - **[Share a Route](share-a-route.md)** - How to share driving routes with others for debugging or review
 - **[Preserve Local File Changes](preserve-local-changes.md)** - Keep your local modifications across software updates
-- **[Gas Interceptor (comma Pedal)](gas-interceptor.md)** - What the Gas Interceptor enables and how sunnypilot uses it
-- **[Zorro Steering Sensor (ZSS)](zorro-steering-sensor.md)** - Aftermarket steering angle sensor for Toyota/Lexus
