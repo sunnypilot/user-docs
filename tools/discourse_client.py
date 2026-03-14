@@ -163,7 +163,7 @@ class DiscourseClient:
     Returns:
       Topic dict with at least 'id' key, or None if not found.
     """
-    encoded = urllib.parse.urlencode({"q": f"title:{title}"})
+    encoded = urllib.parse.urlencode({"q": f'title:"{title}"'})
     data = self._get(f"/search.json?{encoded}")
     if data is None:
       return None
