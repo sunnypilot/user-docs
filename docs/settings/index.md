@@ -19,10 +19,10 @@ Complete reference for every configurable option in sunnypilot. The panels below
 | [Models](models.md) | Driving model selection, download, and tuning |
 | [Steering](steering/index.md) | Lateral control: MADS, lane change, blinker pause, and torque tuning |
 | [Cruise](cruise/index.md) | Cruise behavior: ICBM, smart cruise, custom increments, speed limit assist |
+| [Vehicle](vehicle/index.md) | Vehicle-specific settings by brand |
 | [Visuals](visuals.md) | HUD overlays, indicators, and visual customization |
 | [Display](display.md) | Screen brightness, timeout, and interactivity settings |
 | [OSM](osm.md) | OpenStreetMap database and map downloads |
 | [Trips](trips.md) | Drive statistics and trip history |
-| [Vehicle](vehicle/index.md) | Vehicle-specific settings by brand |
 | [Firehose](firehose.md) | Training data upload for comma's driving models |
 | [Developer](developer.md) | Developer and debug options |

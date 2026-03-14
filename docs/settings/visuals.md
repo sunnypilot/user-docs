@@ -9,7 +9,7 @@ Configure what information and visual elements appear on the driving screen.
 **Location**: `Settings -> Visuals`
 
 !!! info "Toggle & Device Availability"
-    This panel contains a mix of features. Some work on all devices, while others require onroad UI elements that only exist on comma 3X/3. Each item below includes its own availability note.
+    Supported on: comma 3X/3 only. The Visuals panel does not exist on the comma four UI. Some settings can be configured through sunnylink, but many onroad visual features require UI rendering code that only exists on comma 3X/3 and cannot be activated on comma four even through sunnylink. Each item below includes its own availability note.
 
 ---
 

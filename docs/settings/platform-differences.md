@@ -49,7 +49,7 @@ The table below shows which settings panels have on-screen controls on each plat
 | [Visuals](visuals.md) | :material-check: | :material-close: | :material-check: |
 | [Display](display.md) | :material-check: | :material-close: | :material-check: |
 | [OSM](osm.md) | :material-check: | :material-close: | :material-check: |
-| [Trips](trips.md) | :material-check: | :material-close: | :material-check: |
+| [Trips](trips.md) | :material-check: | :material-close: | :material-close: (planned) |
 | [Vehicle](vehicle/index.md) | :material-check: | :material-close: | :material-check: |
 | [Firehose](firehose.md) | :material-check: | :material-check: (condensed) | :material-check: |
 | [Developer](developer.md) | :material-check: | :material-check: | :material-check: |

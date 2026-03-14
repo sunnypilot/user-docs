@@ -9,7 +9,7 @@ Control screen brightness, timing, and UI behavior for the onroad display.
 **Location**: `Settings -> Display`
 
 !!! info "Toggle & Device Availability"
-    Supported on all devices. comma four users must use sunnylink to change this setting.
+    Supported on: comma 3X/3 only. The Display panel does not exist on the comma four UI. comma four users can configure these settings through sunnylink.
 
 ---
 

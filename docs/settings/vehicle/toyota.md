@@ -54,8 +54,10 @@ Toyota and Lexus vehicles with a Gas Interceptor (commonly known as comma Pedal)
 All three conditions must be met for the Gas Interceptor to be enabled:
 
 1. Gas Interceptor hardware installed and detected on the CAN bus
-2. sunnypilot longitudinal control already enabled
+2. [Alpha Longitudinal](../../features/cruise/alpha-longitudinal.md) enabled in **Settings -> Developer -> sunnypilot Longitudinal Control (Alpha)** — this sets `openpilotLongitudinalControl` to true, which the Gas Interceptor requires
 3. Vehicle is not SecOC-equipped (newer models with secure CAN authentication)
+
+When the Gas Interceptor hardware is detected, sunnypilot sets `alphaLongitudinalAvailable` to true, making the Alpha Longitudinal toggle visible in Developer settings. The user must then manually enable it for the Gas Interceptor to function.
 
 When enabled, the Gas Interceptor also enables stop-and-go capability (automatic resume from a full stop).
 
@@ -73,4 +75,4 @@ sunnypilot always attempts to read RSA (Road Sign Assist) CAN messages on all To
 
 Toyota and Lexus TSS 1.0 vehicles with an aftermarket Smart DSU module can gain longitudinal control override. The Smart DSU is automatically detected during fingerprinting when the device is present on the CAN bus — no user configuration is needed.
 
-When detected, the Smart DSU enables stop-and-go capability and makes [Alpha Longitudinal](../../features/cruise/alpha-longitudinal.md) available on the vehicle.
+When detected, the Smart DSU sets `alphaLongitudinalAvailable` to true, which makes the [Alpha Longitudinal](../../features/cruise/alpha-longitudinal.md) toggle visible in **Settings -> Developer**. The user must then manually enable Alpha Longitudinal for the Smart DSU to provide longitudinal control and stop-and-go capability.

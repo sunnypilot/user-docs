@@ -29,8 +29,11 @@ Because this operates outside the vehicle manufacturer's intended cruise control
 !!! info "Requirements"
     - Vehicle must be openpilot-compatible (listed on the [comma.ai vehicle compatibility list](https://comma.ai/vehicles))
     - Vehicle does not have official sunnypilot longitudinal support
-    - Vehicle must report `CP.alphaLongitudinalAvailable = True` — availability is determined per vehicle in the car interface code
+    - Vehicle must report `alphaLongitudinalAvailable = True` — this is set during fingerprinting or loaded from cached fingerprint data via `CarParamsPersistence`, based on the vehicle's hardware capabilities (e.g., Smart DSU detected, Gas Interceptor present)
     - Feature is experimental and under active development
+
+!!! note "How It Gets Enabled"
+    When `alphaLongitudinalAvailable` is true, the Alpha Longitudinal toggle appears in **Settings -> Developer**. When the user enables it, sunnypilot sets `openpilotLongitudinalControl` to true in the car interface code (`opendbc/car/<brand>/interface.py`), which activates direct throttle and brake control. This is the same flag that aftermarket hardware mods like the [Gas Interceptor](../../how-to/gas-interceptor.md) and [Smart DSU](../../settings/vehicle/toyota.md#smart-dsu) depend on.
 
 !!! warning "Development Branches Only"
     Alpha Longitudinal is flagged as `DEVELOPMENT_ONLY`. It is **only available on development and staging branches**, not on release branches. This is intentional — the feature is not considered stable enough for general release.

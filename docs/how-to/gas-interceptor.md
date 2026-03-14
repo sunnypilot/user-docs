@@ -16,7 +16,7 @@ The Gas Interceptor enables sunnypilot longitudinal control on Toyota and Lexus 
 
 !!! info "Prerequisites (all three required)"
     - Gas Interceptor hardware installed and detected on the CAN bus
-    - sunnypilot longitudinal control already enabled
+    - [Alpha Longitudinal](../features/cruise/alpha-longitudinal.md) enabled in **Settings -> Developer -> sunnypilot Longitudinal Control (Alpha)** — when the Gas Interceptor is detected, `alphaLongitudinalAvailable` is set to true, making this toggle visible. The user must manually enable it to activate `openpilotLongitudinalControl`.
     - Vehicle is **not** SecOC-equipped (newer models with secure CAN authentication are excluded)
 
 When all prerequisites are met, the Gas Interceptor also enables stop-and-go capability (automatic resume from a full stop).
@@ -54,7 +54,7 @@ Honda and Acura vehicles use a speed-dependent gas multiplier — 0.4x at stands
 !!! info "Requirements"
     - Gas Interceptor hardware installed and wired to the comma device
     - A compatible Toyota/Lexus or Honda/Acura vehicle
-    - sunnypilot longitudinal control enabled
+    - **Toyota/Lexus**: [Alpha Longitudinal](../features/cruise/alpha-longitudinal.md) must be enabled in **Settings -> Developer** — the Gas Interceptor hardware makes this toggle available, but the user must enable it manually
 
 ## Related
 
