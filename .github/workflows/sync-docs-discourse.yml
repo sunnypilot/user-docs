@@ -25,6 +25,9 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@v7
 
+      - name: Install dependencies
+        run: uv sync
+
       - name: Run converter tests
         run: uv run python tools/test_converter.py
 
@@ -43,6 +46,8 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@v7
 
+      - name: Install dependencies
+        run: uv sync
 
       - name: Sync docs to Discourse
         env:
