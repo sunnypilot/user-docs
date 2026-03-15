@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for the zensical.toml nav parser.
 
-Run: python3 tools/test_nav_parser.py
+Run: uv run python tools/test_nav_parser.py
 """
 
 import sys

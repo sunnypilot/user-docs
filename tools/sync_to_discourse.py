@@ -6,13 +6,13 @@ to sync all documentation defined in zensical.toml to Discourse topics.
 
 Usage:
   # Dry run (no API mutations):
-  uv run --python 3.12 python tools/sync_to_discourse.py --dry-run --verbose
+  uv run python tools/sync_to_discourse.py --dry-run --verbose
 
   # Full sync:
-  uv run --python 3.12 python tools/sync_to_discourse.py
+  uv run python tools/sync_to_discourse.py
 
   # Force re-sync (bypass cache):
-  uv run --python 3.12 python tools/sync_to_discourse.py --force
+  uv run python tools/sync_to_discourse.py --force
 """
 
 from __future__ import annotations

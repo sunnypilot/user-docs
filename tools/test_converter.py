@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for the MkDocs -> Discourse markdown converter.
 
-Run: python3 tools/test_converter.py
+Run: uv run python tools/test_converter.py
 """
 
 import sys

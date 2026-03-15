@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for the SHA-256 content cache.
 
-Run: python3 tools/test_content_cache.py
+Run: uv run python tools/test_content_cache.py
 """
 
 import sys

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for the Discourse API client (fully mocked, no live requests).
 
-Run: python3 tools/test_discourse_client.py
+Run: uv run python tools/test_discourse_client.py
 """
 
 import io
