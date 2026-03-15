@@ -6,6 +6,7 @@ __pycache__/
 *.pyc
 *.pyo
 .venv/
+uv.lock
 
 # Cache
 .cache/
