@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for the sync orchestrator (fully mocked, no live requests).
 
-Run: python3 tools/test_sync_to_discourse.py
+Run: uv run python tools/test_sync_to_discourse.py
 """
 
 import argparse

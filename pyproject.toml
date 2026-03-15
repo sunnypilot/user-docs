@@ -1,0 +1,16 @@
+[project]
+name = "user-docs"
+version = "1.0.0"
+requires-python = "~=3.12.0"
+dependencies = []
+
+[dependency-groups]
+docs = ["zensical"]
+
+[project.urls]
+Homepage = "https://docs.sunnypilot.ai"
+Repository = "https://github.com/sunnypilot/user-docs/"
+
+[tool.uv]
+package = false
+

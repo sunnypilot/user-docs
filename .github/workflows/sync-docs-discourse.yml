@@ -8,12 +8,12 @@ on:
       force:
         description: "Force re-sync all docs (bypass cache)"
         required: false
-        default: "false"
+        default: false
         type: boolean
       dry_run:
         description: "Dry run (no API mutations)"
         required: false
-        default: "false"
+        default: false
         type: boolean
 
 jobs:
@@ -22,24 +22,20 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
 
       - name: Install dependencies
-        run: |
-          pip install uv
-          uv pip install --system zensical
+        run: uv sync
 
       - name: Run converter tests
-        run: uv run --python 3.12 python tools/test_converter.py
+        run: uv run python tools/test_converter.py
 
       - name: Run discourse client tests
-        run: uv run --python 3.12 python tools/test_discourse_client.py
+        run: uv run python tools/test_discourse_client.py
 
       - name: Run sync orchestrator tests
-        run: uv run --python 3.12 python tools/test_sync_to_discourse.py
+        run: uv run python tools/test_sync_to_discourse.py
 
   sync:
     needs: test
@@ -47,15 +43,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
 
       - name: Install dependencies
-        run: |
-          pip install uv
-          uv pip install --system zensical
+        run: uv sync
 
       - name: Sync docs to Discourse
         env:
@@ -73,4 +65,4 @@ jobs:
           if [ "$DRY_RUN" = "true" ]; then
             ARGS="$ARGS --dry-run"
           fi
-          uv run --python 3.12 python tools/sync_to_discourse.py $ARGS
+          uv run python tools/sync_to_discourse.py $ARGS
