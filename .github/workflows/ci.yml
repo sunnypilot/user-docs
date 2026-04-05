@@ -2,14 +2,11 @@ name: CI
 
 on:
   pull_request:
-    paths:
-      - 'tools/**'
-      - '.github/workflows/ci.yml'
   push:
     branches: [master]
-    paths:
-      - 'tools/**'
-      - '.github/workflows/ci.yml'
+
+permissions:
+  pull-requests: write
 
 jobs:
   lint:
@@ -64,3 +61,88 @@ jobs:
       - name: Test sync orchestrator
         run: uv run --python 3.12 python tools/test_sync_to_discourse.py
         if: always()
+
+  preview:
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Restore Discourse sync cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .discourse_sync_cache/
+          key: discourse-sync-cache-dummy
+          restore-keys: |
+            discourse-sync-cache-
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install uv
+          uv pip install --system zensical
+
+      - name: Dry-run Discourse sync
+        env:
+          DISCOURSE_URL: ${{ secrets.DISCOURSE_URL }}
+          DISCOURSE_API_KEY: ${{ secrets.DISCOURSE_API_KEY }}
+          DISCOURSE_API_USER: ${{ secrets.DISCOURSE_API_USER }}
+          DISCOURSE_CATEGORY_MAP: ${{ vars.DISCOURSE_CATEGORY_MAP }}
+        run: |
+          uv run --python 3.12 python tools/sync_to_discourse.py --dry-run --verbose 2>&1 | tee sync_preview.txt
+
+      - name: Build PR comment
+        id: comment
+        run: |
+          # Extract the summary table (everything after the === line)
+          SUMMARY=$(sed -n '/^=\{10,\}/,/^=\{10,\}$/p' sync_preview.txt | head -20)
+
+          # Count actions from the summary
+          CREATED=$(grep -oP 'Created:\s+\K\d+' sync_preview.txt || echo "0")
+          UPDATED=$(grep -oP 'Updated \(Normal\):\s+\K\d+' sync_preview.txt || echo "0")
+          UPDATED_IDX=$(grep -oP 'Updated \(Index\):\s+\K\d+' sync_preview.txt || echo "0")
+          SKIPPED_CACHE=$(grep -oP 'Skipped \(Cached\):\s+\K\d+' sync_preview.txt || echo "0")
+          SKIPPED_MATCH=$(grep -oP 'Skipped \(Discourse Match\):\s+\K\d+' sync_preview.txt || echo "0")
+          SKIPPED_CAT=$(grep -oP 'Skipped \(No Category\):\s+\K\d+' sync_preview.txt || echo "0")
+          FAILED=$(grep -oP 'Failed:\s+\K\d+' sync_preview.txt || echo "0")
+          TOTAL=$(grep -oP 'Total Parsed:\s+\K\d+' sync_preview.txt || echo "0")
+
+          CHANGES=$((CREATED + UPDATED + UPDATED_IDX))
+
+          {
+            echo 'body<<COMMENT_EOF'
+            echo "### Discourse Sync Preview"
+            echo ""
+            if [ "$CHANGES" -eq 0 ]; then
+              echo "Docs are up to date. No forum topic changes needed."
+            else
+              echo "**${CHANGES} topic(s) would be modified** (${CREATED} created, $((UPDATED + UPDATED_IDX)) updated) out of ${TOTAL} total."
+            fi
+            if [ "$FAILED" -ne 0 ]; then
+              echo ""
+              echo "> [!WARNING]"
+              echo "> ${FAILED} topic(s) failed to resolve."
+            fi
+            echo ""
+            echo "<details>"
+            echo "<summary>Full dry-run output</summary>"
+            echo ""
+            echo '```'
+            cat sync_preview.txt
+            echo '```'
+            echo ""
+            echo "</details>"
+            echo 'COMMENT_EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Comment on PR
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: ${{ steps.comment.outputs.body }}
+          comment_tag: discourse-sync-preview
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
