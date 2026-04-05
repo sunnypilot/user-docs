@@ -119,7 +119,7 @@ jobs:
             echo "### Discourse Sync Preview"
             echo ""
             if [ "$CHANGES" -eq 0 ]; then
-              echo "No Discourse changes detected."
+              echo "✓ Docs up to date — no Discourse changes needed."
             else
               echo "**${CHANGES} topic(s) would be modified** (${CREATED} created, $((UPDATED + UPDATED_IDX)) updated) out of ${TOTAL} total."
             fi
