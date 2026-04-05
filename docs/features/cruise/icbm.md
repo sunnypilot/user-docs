@@ -63,14 +63,17 @@ ICBM support varies by vehicle brand. The feature toggle only appears in setting
 
 **Settings** → **Cruise** → **Intelligent Cruise Button Management**
 
-## Features Unlocked by ICBM
+## Features Enabled by ICBM
 
-When ICBM is enabled, the following features become available even on vehicles without native longitudinal control:
+When ICBM is enabled, the following features become available on vehicles without native longitudinal control:
 
-- **[Smart Cruise Control — Vision](scc-v.md)** — Vision-based adaptive speed adjustments
-- **[Smart Cruise Control — Map](scc-m.md)** — Map-aware speed adjustments
+- **[Smart Cruise Control — Vision](scc-v.md)** — Vision-based speed adjustments for upcoming curves
+- **[Smart Cruise Control — Map](scc-m.md)** — Map-aware speed adjustments for curves, speed zones, and intersections
 - **[Custom ACC Increments](custom-acc-increments.md)** — Custom button press speed steps
 - **[Speed Limit Assist](speed-limit.md)** — Automatic speed limit matching
+
+!!! note "SCC-V and SCC-M are not exclusive to ICBM"
+    Smart Cruise Control — Vision and Smart Cruise Control — Map also work when sunnypilot longitudinal control is active (native or [Alpha](alpha-longitudinal.md)). In that case, their speed targets are fed directly into the longitudinal planner rather than through cruise button simulation.
 
 ## Settings Reference
 
