@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  pull_request:
+    paths:
+      - 'tools/**'
+      - '.github/workflows/ci.yml'
+  push:
+    branches: [master]
+    paths:
+      - 'tools/**'
+      - '.github/workflows/ci.yml'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install uv
+          uv pip install --system ruff
+
+      - name: Lint with Ruff
+        run: uv run --python 3.12 ruff check tools/
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install uv
+          uv pip install --system zensical
+
+      - name: Test nav parser
+        run: uv run --python 3.12 python tools/test_nav_parser.py
+        if: always()
+
+      - name: Test content cache
+        run: uv run --python 3.12 python tools/test_content_cache.py
+        if: always()
+
+      - name: Test converter
+        run: uv run --python 3.12 python tools/test_converter.py
+        if: always()
+
+      - name: Test discourse client
+        run: uv run --python 3.12 python tools/test_discourse_client.py
+        if: always()
+
+      - name: Test sync orchestrator
+        run: uv run --python 3.12 python tools/test_sync_to_discourse.py
+        if: always()
