@@ -601,8 +601,6 @@ def test_connection_error_returns_none(mock_urlopen: MagicMock):
 # Runner
 # ---------------------------------------------------------------------------
 
-import os  # noqa: E402 (needed for test_config_from_env_defaults)
-
 if __name__ == "__main__":
   print("Testing Discourse API client:")
   tests = [
