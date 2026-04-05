@@ -27,11 +27,35 @@ user-docs/
 │   ├── sync_to_discourse.py # Sync orchestrator (entry point)
 │   └── test_*.py         # Unit tests for each module
 ├── .github/workflows/
+│   ├── ci.yml            # Lint and test on PR/push to tools/
 │   ├── build-docs.yml    # Build site + deploy to GitHub Pages
 │   └── sync-docs-discourse.yml  # Run tests, then sync to Discourse
 ├── zensical.toml         # Site config, nav tree, theme, extensions
 └── site/                 # Build output (gitignored)
 ```
+
+## Testing
+
+Run tests locally before pushing:
+
+```bash
+pip install uv zensical ruff
+
+# Lint
+ruff check tools/
+
+# Run all tests
+python3 tools/test_nav_parser.py
+python3 tools/test_content_cache.py
+python3 tools/test_converter.py
+python3 tools/test_discourse_client.py
+python3 tools/test_sync_to_discourse.py
+
+# Or run individual test file
+python3 tools/test_converter.py
+```
+
+CI runs these on every PR and push to `master` (see `.github/workflows/ci.yml`).
 
 ## License
 

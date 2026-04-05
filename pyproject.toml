@@ -1,0 +1,5 @@
+[tool.ruff]
+target-version = "3.12"
+line-length = 100
+select = ["E", "F", "W"]
+ignore = ["E501"]
