@@ -70,6 +70,30 @@ def extract_title(content: str, fallback: str) -> str:
   return fallback
 
 
+def _body_matches_discourse(local_body: str, remote_raw: str | None) -> bool:
+  """Return True if local_body matches what Discourse currently has.
+
+  Normalizes trailing whitespace on each line before comparing so minor
+  formatting differences introduced during Discourse roundtrips do not
+  trigger false positives.
+
+  Args:
+    local_body: The fully rendered body we would send to Discourse.
+    remote_raw: The raw markdown currently stored in Discourse, or None
+      if the fetch failed (treat as not matching so we update).
+
+  Returns:
+    True only when the content is effectively identical.
+  """
+  if remote_raw is None:
+    return False
+
+  def _normalize(s: str) -> str:
+    return "\n".join(line.rstrip() for line in s.splitlines()).rstrip()
+
+  return _normalize(local_body) == _normalize(remote_raw)
+
+
 def build_footer(doc_path: str) -> str:
   """Build the sync footer with GitHub link and sync ID."""
   gh_url = (
@@ -442,6 +466,7 @@ def sync_docs(args: argparse.Namespace) -> None:
     "updated": 0,
     "updated_index": 0,
     "skipped_cached": 0,
+    "skipped_discourse_match": 0,
     "skipped_no_category": 0,
     "failed": 0,
     "sidebars_updated": 0,
@@ -549,6 +574,15 @@ def sync_docs(args: argparse.Namespace) -> None:
           continue
 
         time.sleep(1.0)
+        current_raw = client.get_post_raw(post_id)
+        if _body_matches_discourse(body, current_raw):
+          if args.verbose:
+            print(f"  SKIP (discourse up-to-date): {label}")
+          stats["skipped_discourse_match"] += 1
+          cache.save(entry.path, raw_content)
+          continue
+
+        time.sleep(1.0)
         result = client.update_post(
           post_id, body,
           edit_reason="Docs sync: index page",
@@ -587,6 +621,15 @@ def sync_docs(args: argparse.Namespace) -> None:
         if post_id is None:
           print(f"  FAIL: No first post for topic {topic_id}: {label}")
           stats["failed"] += 1
+          continue
+
+        time.sleep(1.0)
+        current_raw = client.get_post_raw(post_id)
+        if _body_matches_discourse(body, current_raw):
+          if args.verbose:
+            print(f"  SKIP (discourse up-to-date): {label}")
+          stats["skipped_discourse_match"] += 1
+          cache.save(entry.path, raw_content)
           continue
 
         time.sleep(1.0)
@@ -636,6 +679,15 @@ def sync_docs(args: argparse.Namespace) -> None:
               f"  FAIL: No first post for topic {found_id}: {label}"
             )
             stats["failed"] += 1
+            continue
+
+          time.sleep(1.0)
+          current_raw = client.get_post_raw(post_id)
+          if _body_matches_discourse(body, current_raw):
+            if args.verbose:
+              print(f"  SKIP (discourse up-to-date): {label}")
+            stats["skipped_discourse_match"] += 1
+            cache.save(entry.path, raw_content)
             continue
 
           time.sleep(1.0)
@@ -713,6 +765,7 @@ def sync_docs(args: argparse.Namespace) -> None:
   print(f"  Updated (Normal):      {stats['updated']}")
   print(f"  Updated (Index):       {stats['updated_index']}")
   print(f"  Skipped (Cached):      {stats['skipped_cached']}")
+  print(f"  Skipped (Discourse Match): {stats['skipped_discourse_match']}")
   print(f"  Skipped (No Category): {stats['skipped_no_category']}")
   print(f"  Failed:                {stats['failed']}")
   print(f"  Sidebars Updated:      {stats['sidebars_updated']}")

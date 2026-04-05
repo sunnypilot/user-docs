@@ -9,13 +9,13 @@ import json
 import sys
 import tempfile
 import textwrap
-import urllib.request
 from pathlib import Path
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 sys.path.insert(0, str(Path(__file__).parent))
 
 from sync_to_discourse import (
+  _body_matches_discourse,
   _get_section_folder,
   _resolve_topic_id,
   _walk_nav_for_sidebar,
@@ -85,6 +85,41 @@ def test_build_footer_starts_with_separator():
   footer = build_footer("test.md")
   assert footer.startswith("\n\n---\n")
   print("  PASS: build_footer_starts_with_separator")
+
+
+# ---------------------------------------------------------------------------
+# _body_matches_discourse
+# ---------------------------------------------------------------------------
+
+
+def test_body_matches_discourse_identical():
+  body = "# Title\n\nContent here.\n"
+  assert _body_matches_discourse(body, body) is True
+  print("  PASS: body_matches_discourse_identical")
+
+
+def test_body_matches_discourse_trailing_whitespace():
+  local = "# Title\n\nContent here.\n"
+  remote = "# Title  \n\nContent here.  \n"
+  assert _body_matches_discourse(local, remote) is True
+  print("  PASS: body_matches_discourse_trailing_whitespace")
+
+
+def test_body_matches_discourse_different_content():
+  local = "# Title\n\nNew content.\n"
+  remote = "# Title\n\nOld content.\n"
+  assert _body_matches_discourse(local, remote) is False
+  print("  PASS: body_matches_discourse_different_content")
+
+
+def test_body_matches_discourse_none_remote():
+  assert _body_matches_discourse("some content", None) is False
+  print("  PASS: body_matches_discourse_none_remote")
+
+
+def test_body_matches_discourse_empty_strings():
+  assert _body_matches_discourse("", "") is True
+  print("  PASS: body_matches_discourse_empty_strings")
 
 
 # ---------------------------------------------------------------------------
@@ -346,6 +381,88 @@ def test_sync_docs_dry_run():
   print("  PASS: sync_docs_dry_run")
 
 
+def test_sync_docs_skips_when_discourse_matches():
+  """Integration test: no update is pushed when Discourse already has the same content."""
+  with tempfile.TemporaryDirectory() as tmpdir:
+    docs_dir = Path(tmpdir) / "docs"
+    docs_dir.mkdir()
+    gs_dir = docs_dir / "getting-started"
+    gs_dir.mkdir()
+
+    doc_content = "---\ntitle: Test Doc\n---\n\n# Test Doc\n\nContent.\n"
+    (gs_dir / "test-doc.md").write_text(doc_content)
+
+    toml_path = Path(tmpdir) / "zensical.toml"
+    toml_path.write_text(textwrap.dedent("""\
+      [project]
+      docs_dir = "docs"
+      nav = [
+        { "Getting Started" = [
+        { "Test Doc" = "getting-started/test-doc.md" },
+        ]},
+      ]
+    """))
+
+    env = {
+      "DISCOURSE_URL": "https://community.sunnypilot.ai",
+      "DISCOURSE_API_KEY": "test-key",
+      "DISCOURSE_CATEGORY_MAP": '{"getting-started": 133}',
+    }
+
+    # Pass 1 lookup response: topic exists with id 200
+    pass1_response = _mock_response({"topics": [{"id": 200, "title": "Test Doc"}]})
+    # first_post_id response
+    first_post_response = _mock_response({
+      "post_stream": {"posts": [{"id": 500, "post_number": 1}]},
+    })
+
+    def make_side_effect(local_body: str) -> MagicMock:
+      """get_post_raw returns content matching what we'd send."""
+      return _mock_response({"id": 500, "raw": local_body})
+
+    args = argparse.Namespace(dry_run=False, verbose=True, force=False)
+
+    call_responses: list[MagicMock] = []
+
+    with (
+      patch.dict("os.environ", env, clear=False),
+      patch("sync_to_discourse.DOCS_DIR", docs_dir),
+      patch("sync_to_discourse.ZENSICAL_TOML", toml_path),
+      patch("sync_to_discourse.time") as mock_time,
+      patch("urllib.request.urlopen") as mock_urlopen,
+    ):
+      mock_time.sleep = MagicMock()
+
+      # Capture calls so we can inject matching content after first_post_id fires
+      def side_effect(req: object) -> MagicMock:
+        url = req.full_url  # type: ignore[attr-defined]
+        method = req.method  # type: ignore[attr-defined]
+        call_responses.append((method, url))
+
+        if "/search.json" in url:
+          return pass1_response
+        if "/t/200.json" in url:
+          return first_post_response
+        if "/posts/500.json" in url and method == "GET":
+          # Return a raw that will match whatever body we compute
+          # (we inject a placeholder; the real check happens below)
+          return _mock_response({"id": 500, "raw": "__MATCH__"})
+        # Any POST/PUT would be a failure — should not be reached
+        return _mock_response({})
+
+      mock_urlopen.side_effect = side_effect
+
+      # Patch _body_matches_discourse to return True (simulates match)
+      with patch("sync_to_discourse._body_matches_discourse", return_value=True):
+        sync_docs(args)
+
+      # Verify no PUT mutations were made
+      put_calls = [(m, u) for m, u in call_responses if m == "PUT"]
+      assert put_calls == [], f"Expected no PUT calls, got: {put_calls}"
+
+  print("  PASS: sync_docs_skips_when_discourse_matches")
+
+
 # ---------------------------------------------------------------------------
 # Runner
 # ---------------------------------------------------------------------------
@@ -377,8 +494,15 @@ if __name__ == "__main__":
     test_walk_nav_nested_sections,
     test_walk_nav_skips_external_links,
     test_walk_nav_skips_missing_topic_ids,
+    # _body_matches_discourse
+    test_body_matches_discourse_identical,
+    test_body_matches_discourse_trailing_whitespace,
+    test_body_matches_discourse_different_content,
+    test_body_matches_discourse_none_remote,
+    test_body_matches_discourse_empty_strings,
     # Integration
     test_sync_docs_dry_run,
+    test_sync_docs_skips_when_discourse_matches,
   ]
   passed = 0
   failed = 0

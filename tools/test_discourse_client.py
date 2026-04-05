@@ -520,6 +520,49 @@ def test_first_post_id_topic_not_found(mock_urlopen: MagicMock):
 
 
 # ---------------------------------------------------------------------------
+# get_post_raw
+# ---------------------------------------------------------------------------
+
+
+@patch("urllib.request.urlopen")
+def test_get_post_raw_success(mock_urlopen: MagicMock):
+  mock_urlopen.return_value = mock_response({
+    "id": 501,
+    "raw": "# ICBM\n\nDoc content here.\n",
+    "cooked": "<h1>ICBM</h1><p>Doc content here.</p>",
+  })
+  client = DiscourseClient(TEST_CONFIG)
+
+  result = client.get_post_raw(501)
+
+  assert result == "# ICBM\n\nDoc content here.\n"
+  call_args = mock_urlopen.call_args[0][0]
+  assert call_args.method == "GET"
+  assert "/posts/501.json" in call_args.full_url
+  print("  PASS: get_post_raw_success")
+
+
+@patch("urllib.request.urlopen")
+def test_get_post_raw_missing_field(mock_urlopen: MagicMock):
+  mock_urlopen.return_value = mock_response({"id": 501, "cooked": "<p>hi</p>"})
+  client = DiscourseClient(TEST_CONFIG)
+
+  result = client.get_post_raw(501)
+  assert result is None
+  print("  PASS: get_post_raw_missing_field")
+
+
+@patch("urllib.request.urlopen")
+def test_get_post_raw_api_error(mock_urlopen: MagicMock):
+  mock_urlopen.side_effect = mock_http_error(404)
+  client = DiscourseClient(TEST_CONFIG)
+
+  result = client.get_post_raw(99999)
+  assert result is None
+  print("  PASS: get_post_raw_api_error")
+
+
+# ---------------------------------------------------------------------------
 # Headers / auth
 # ---------------------------------------------------------------------------
 
@@ -557,8 +600,6 @@ def test_connection_error_returns_none(mock_urlopen: MagicMock):
 # ---------------------------------------------------------------------------
 # Runner
 # ---------------------------------------------------------------------------
-
-import os  # noqa: E402 (needed for test_config_from_env_defaults)
 
 if __name__ == "__main__":
   print("Testing Discourse API client:")
@@ -604,6 +645,10 @@ if __name__ == "__main__":
     test_first_post_id_found,
     test_first_post_id_empty_stream,
     test_first_post_id_topic_not_found,
+    # get_post_raw
+    test_get_post_raw_success,
+    test_get_post_raw_missing_field,
+    test_get_post_raw_api_error,
     # Misc
     test_headers_set_correctly,
     test_connection_error_returns_none,
