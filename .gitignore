@@ -10,6 +10,7 @@ __pycache__/
 # Cache
 .cache/
 .docs-sync-cache.json
+.discourse_sync_cache/
 
 # IDE
 .idea/

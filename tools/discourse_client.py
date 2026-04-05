@@ -1,10 +1,11 @@
 """Minimal Discourse API client using only urllib (zero external deps).
 
-Provides the 4 CRUD operations needed by the docs sync orchestrator:
+Provides the operations needed by the docs sync orchestrator:
 1. find_topic_by_sync_id(sync_id)
 2. create_topic(title, raw, category_id, tags)
 3. update_post(post_id, raw, edit_reason)
 4. first_post_id(topic_id)
+5. get_post_raw(post_id)
 
 Configuration via environment variables:
   DISCOURSE_URL          - Base URL (e.g. https://community.sunnypilot.ai)
@@ -296,6 +297,24 @@ class DiscourseClient:
     if not posts:
       return None
     return posts[0].get("id")
+
+  def get_post_raw(self, post_id: int) -> str | None:
+    """Fetch the current raw markdown content of a post.
+
+    Used to compare against the locally rendered body before deciding
+    whether to push an update.  Avoids unnecessary edits when the
+    rendered content hasn't changed (e.g. after a cache eviction).
+
+    Args:
+      post_id: The Discourse post ID.
+
+    Returns:
+      Raw markdown string, or None if the request failed.
+    """
+    data = self._get(f"/posts/{post_id}.json")
+    if data is None:
+      return None
+    return data.get("raw")
 
   # ----- HTTP helpers -----
 
