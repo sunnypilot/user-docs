@@ -69,6 +69,14 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Restore Discourse sync cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .discourse_sync_cache/
+          key: discourse-sync-cache-dummy
+          restore-keys: |
+            discourse-sync-cache-
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
