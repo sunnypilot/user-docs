@@ -522,9 +522,9 @@ def sync_docs(args: argparse.Namespace) -> None:
     if is_about_topic:
       index_contents[entry.path] = body
 
-    # Cache check (skipped during dry run — always resolve for verification)
+    # Cache check — skip unchanged docs in both live and dry-run modes
     cached = not cache.is_changed(entry.path, raw_content)
-    if not args.dry_run and not args.force and cached:
+    if not args.force and cached:
       if args.verbose:
         print(f"  SKIP (cached): {label}")
       stats["skipped_cached"] += 1
@@ -541,10 +541,9 @@ def sync_docs(args: argparse.Namespace) -> None:
       # (e.g. features/cruise/index.md -> sub-category 140).
       about_topic_id = synced_topics.get(entry.path)
       if args.dry_run:
-        cache_tag = " [cached]" if cached else ""
         if about_topic_id is not None:
           print(
-            f"  [DRY RUN] Would update index{cache_tag}: {label}\n"
+            f"  [DRY RUN] Would update index: {label}\n"
             f"            -> About topic {about_topic_id} "
             f"(category {category_id})\n"
             f"            -> {config.base_url}/t/{about_topic_id}"
@@ -608,9 +607,8 @@ def sync_docs(args: argparse.Namespace) -> None:
 
     if topic_id is not None:
       if args.dry_run:
-        cache_tag = " [cached]" if cached else ""
         print(
-          f"  [DRY RUN] Would update{cache_tag}: {label}\n"
+          f"  [DRY RUN] Would update: {label}\n"
           f"            -> topic {topic_id} "
           f"(category {category_id})\n"
           f"            -> {config.base_url}/t/{topic_id}"
@@ -663,9 +661,8 @@ def sync_docs(args: argparse.Namespace) -> None:
         synced_topics[entry.path] = found_id
 
         if args.dry_run:
-          cache_tag = " [cached]" if cached else ""
           print(
-            f"  [DRY RUN] Would update (found by title){cache_tag}: "
+            f"  [DRY RUN] Would update (found by title): "
             f"{label}\n"
             f"            -> topic {found_id} "
             f"(category {category_id})\n"
@@ -714,9 +711,8 @@ def sync_docs(args: argparse.Namespace) -> None:
           stats["updated"] += 1
 
       elif args.dry_run:
-        cache_tag = " [cached]" if cached else ""
         print(
-          f"  [DRY RUN] Would create{cache_tag}: {label}\n"
+          f"  [DRY RUN] Would create: {label}\n"
           f"            -> NEW (category {category_id})"
         )
         stats["created"] += 1
