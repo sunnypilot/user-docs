@@ -22,6 +22,15 @@ Allows sunnypilot to dynamically manage cruise speed by intercepting button pres
 
 ---
 
+## Enable Dynamic Experimental Control
+
+Allows the model to determine when to use sunnypilot ACC or sunnypilot End to End Longitudinal. The system uses trajectory analysis and filtered signals to select the most appropriate mode.
+
+!!! note "Availability"
+    Requires longitudinal control.
+
+---
+
 ## Smart Cruise Control - Vision
 
 Uses vision-based path predictions to estimate the appropriate speed to drive through turns ahead. The system monitors predicted lateral acceleration and smoothly decelerates when entering curves, then accelerates back to your set speed when exiting.
@@ -60,15 +69,6 @@ A second selector lets you choose the speed change for a long press:
 | **1** | 1 km/h (or mph) |
 | **2** | 5 km/h (or mph) |
 | **3** | 10 km/h (or mph) |
-
----
-
-## Enable Dynamic Experimental Control
-
-Automatically switches between standard and experimental driving mode based on driving conditions. When enabled, the system uses real-time signals (speed, turn detection, stop signs, traffic lights) to determine the most appropriate mode.
-
-!!! note "Availability"
-    Requires longitudinal control. The device must be offroad (parked, ignition off) to change this setting.
 
 ---
 

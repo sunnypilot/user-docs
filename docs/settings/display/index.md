@@ -22,7 +22,7 @@ A selector that controls the screen brightness while driving. Use the **-** and 
 | **Auto (Default)** | Adjusts brightness automatically based on ambient light |
 | **Auto (Dark)** | Adjusts automatically but biased toward a darker screen |
 | **Screen Off** | Turns the screen off completely after the delay period |
-| **0% - 100%** | Fixed brightness level in 5% increments |
+| **5% - 100%** | Fixed brightness level in 5% increments |
 
 ---
 

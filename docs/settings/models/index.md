@@ -29,8 +29,10 @@ When a model is being downloaded, progress bars appear for each component:
 - **Driving Model** - the main supercombo neural network
 - **Vision Model** - the vision processing model
 - **Policy Model** - the decision-making policy model
+- **Off-Policy Model** - the off-policy neural network component
+- **On-Policy Model** - the on-policy neural network component
 
-Each shows a progress bar with download percentage.
+Each shows a progress bar with download percentage. Not all models include every component — progress bars only appear for components that are part of the selected model bundle.
 
 ---
 

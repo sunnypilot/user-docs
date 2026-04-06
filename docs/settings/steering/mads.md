@@ -47,9 +47,9 @@ A row of three buttons controls what happens to MADS steering assistance when yo
 
 | Mode | What happens |
 |------|-------------|
-| **Remain Active** | Steering assistance continues even after you press the brake |
-| **Pause** | Steering assistance pauses but can be quickly resumed |
-| **Disengage** | Steering assistance fully disengages when you brake |
+| **Remain Active** | Automatic Lane Centering (ALC) remains active when the brake pedal is pressed |
+| **Pause** | ALC pauses but can be quickly resumed |
+| **Disengage** | ALC fully disengages when you brake |
 
 !!! warning "Vehicle Restrictions"
     - **Rivian**: Always forced to Disengage (limited settings mode)

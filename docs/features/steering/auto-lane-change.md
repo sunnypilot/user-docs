@@ -17,7 +17,7 @@ Automatically executes lane changes when you activate the turn signal. You can c
     - **Nudge:** Give a light steering nudge to confirm the lane change
     - **Nudgeless:** The lane change begins immediately
     - **Timed (0.5s–3s):** The lane change begins after the configured delay
-5. If BSM Delay is enabled and a vehicle is detected in your blind spot, the lane change is delayed by an additional 1 second beyond the configured timer
+5. If BSM Delay is enabled and a vehicle is detected in your blind spot, the wait timer resets so the lane change is delayed until the blind spot clears (approximately 1 additional second of waiting)
 
 ## Requirements
 
@@ -45,7 +45,7 @@ Automatically executes lane changes when you activate the turn signal. You can c
 
 ## Blind Spot Monitoring Integration
 
-If your vehicle supports BSM and the BSM Delay option is enabled, the system checks for vehicles in your blind spot before executing the lane change. When a vehicle is detected in the blind spot, the lane change is delayed by an additional **1 second** on top of the configured timer until the adjacent lane is clear.
+If your vehicle supports BSM and the BSM Delay option is enabled, the system checks for vehicles in your blind spot before executing the lane change. When a vehicle is detected in the blind spot, the wait timer resets, effectively delaying the lane change by approximately **1 second** until the adjacent lane is clear.
 
 !!! info "BSM Requirements"
     - Vehicle must support Blind Spot Monitoring

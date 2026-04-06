@@ -58,6 +58,15 @@ Enables joystick-controlled driving for testing and development purposes.
 
 ---
 
+## Lateral Maneuver Mode
+
+Enables a lateral debug mode for testing steering maneuvers.
+
+!!! note "Availability"
+    Hidden on release branches. Can only be changed while the device is offroad.
+
+---
+
 ## Longitudinal Maneuver Mode
 
 Enables a longitudinal debug mode for testing acceleration and braking maneuvers.
@@ -129,6 +138,7 @@ On **comma four**, the Developer panel includes:
 - SSH (circle icon toggle)
 - SSH Keys
 - Joystick Debug Mode
+- Lateral Maneuver Mode
 - Longitudinal Maneuver Mode
 - Alpha Longitudinal
 - UI Debug Mode
