@@ -23,7 +23,7 @@ A row of five buttons lets you choose the source policy:
 | **Map Only** | Uses only OpenStreetMap data for speed limits. Requires a downloaded map database from the [OSM panel](../../osm/index.md) |
 | **Car First** | Checks the car's speed limit data first. Falls back to map data if the car does not report a limit |
 | **Map First** | Checks map data first. Falls back to the car's reported limit if no map data is available |
-| **Combined** | Uses the higher of the two available values from car and map sources |
+| **Combined** | Uses the lowest (most conservative) value when both car and map sources report a limit |
 
 !!! tip
     **Car First** is a good default for vehicles with traffic sign recognition. If your vehicle does not have sign recognition, use **Map Only** or **Map First** and make sure you have downloaded the map for your region in the [OSM panel](../../osm/index.md).

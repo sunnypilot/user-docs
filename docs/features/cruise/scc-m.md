@@ -6,12 +6,12 @@ title: Smart Cruise Control - Map
 
 ## What It Does
 
-SCC-M uses downloaded OpenStreetMap data to anticipate upcoming curves, speed limit zones, and intersections. It calculates the deceleration needed to reach a safe target speed before each waypoint and outputs a smoothed velocity profile using jerk-based planning. This applies regardless of whether sunnypilot or the vehicle's stock system is handling longitudinal control.
+SCC-M uses downloaded OpenStreetMap data to anticipate upcoming curves and speed zones. It calculates when to begin decelerating to reach a safe target speed before each waypoint using jerk-based distance planning. This applies regardless of whether sunnypilot or the vehicle's stock system is handling longitudinal control.
 
 ## How It Works
 
 1. OSM map data is loaded and matched to the vehicle's current GPS position
-2. Upcoming waypoints with target velocities are identified (curves, speed zones, intersections)
+2. Upcoming waypoints with target velocities are identified (curves, speed zones)
 3. SCC-M calculates the required deceleration to arrive at each waypoint at the correct speed
 4. A smoothed target speed is output and fed into the longitudinal planner
 

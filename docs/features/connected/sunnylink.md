@@ -32,7 +32,8 @@ sunnylink has a sponsorship system with multiple tiers:
 | Benefactor | Green |
 | Contributor | Steel Blue |
 | Supporter | Purple |
-| Free / Novice | Default |
+| Novice | Default |
+| Free | Default |
 
 Sponsor status is displayed in the sunnylink settings panel. Higher tiers may unlock additional features (such as the infrastructure uploader).
 

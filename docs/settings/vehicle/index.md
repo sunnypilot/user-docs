@@ -38,7 +38,7 @@ After a vehicle is detected or selected, brand-specific settings appear below th
 - [Ford](ford.md) - MADS support
 - [GM / Chevrolet](gm.md) - Non-ACC vehicle support, custom torque models
 - [Honda / Acura](honda.md) - Gas Interceptor, ICBM, MADS, Nidec hybrid support
-- [Hyundai / Kia / Genesis](hyundai.md) - Custom Longitudinal Tuning, ESCC
+- [Hyundai / Kia / Genesis](hyundai.md) - MADS, ICBM, Custom Longitudinal Tuning, ESCC
 - [Mazda](mazda.md) - ICBM support
 - [Nissan](nissan.md) - Leaf-specific behavior
 - [Rivian](rivian.md) - Longitudinal harness upgrade, MADS limitations

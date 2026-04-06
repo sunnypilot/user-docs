@@ -24,13 +24,17 @@ DEC uses a confidence-based switching system with specific probability threshold
 
 ### Detection Signals
 
+DEC derives its signals from model trajectory analysis and Kalman-filtered state estimates:
+
 | Signal | Threshold | Effect |
 |--------|-----------|--------|
-| **Lead vehicle probability** | ≥ 0.45 | Favors `acc` mode (standard following) |
-| **Slow-down probability** | ≥ 0.3 | Favors `blended` mode (E2E for stops/turns) |
-| **Stop sign / traffic light** | Detected by vision model | Triggers switch to `blended` mode |
-| **Turn detection** | Upcoming turns | Triggers switch to `blended` mode |
+| **Lead vehicle detection** | Filtered confidence ≥ 0.45 | Favors `acc` mode (standard following) |
+| **Slow-down detection** | Filtered urgency ≥ 0.3 | Favors `blended` mode (the model's predicted trajectory endpoint is closer than expected, indicating a stop or slowdown ahead) |
 | **Current speed** | Speed-dependent | Lower speeds favor `blended` mode |
+| **Standstill** | Vehicle stopped | Evaluated for mode hold |
+
+!!! note
+    DEC does not use separate stop sign, traffic light, or turn classifiers. It infers all stop/slowdown scenarios from the model's trajectory endpoint distance relative to expected travel distance. The system also distinguishes between radar and radarless vehicles, using different decision logic for each.
 
 ### Switching Logic
 
@@ -43,14 +47,13 @@ Based on these signals, DEC switches between:
 
 | Mode | When DEC Activates It |
 |------|----------|
-| **Chill / Standard** (`acc`) | Highway driving with steady speeds, lead vehicle following, clear lanes, and no upcoming stops or complex intersections |
-| **Experimental** (`blended`) | City driving with stops, turns, traffic lights, and complex intersections where the vehicle needs to slow down or stop |
+| **Chill / Standard** (`acc`) | Highway driving with steady speeds, lead vehicle following, and no predicted slowdown ahead |
+| **Experimental** (`blended`) | Situations where the model predicts the vehicle needs to slow down or stop ahead (intersections, turns, traffic) |
 
 ## Requirements
 
 !!! info "Requirements"
     - Longitudinal control must be available
-    - Device must be offroad to enable/disable
 
 ## How to Enable
 

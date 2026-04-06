@@ -58,6 +58,32 @@ These on-board sources supplement OSM-based speed limits. See [Speed Limit Assis
 
 ---
 
+## MADS Support
+
+Hyundai, Kia, and Genesis vehicles support [MADS](../../features/steering/mads.md) (Modular Assistive Driving System) via the **LDA button** (the physical button that toggles stock Lane Following Assist). The system manages LFA icon states on the dashboard to indicate lateral control status.
+
+On vehicles with the LDA button or CAN FD, MADS can be used even without active cruise state available.
+
+!!! note
+    Only the LDA button is supported for MADS toggling. The LKAS button is not currently supported on Hyundai/Kia/Genesis vehicles.
+
+---
+
+## Intelligent Cruise Button Management (ICBM)
+
+Hyundai, Kia, and Genesis vehicles support [ICBM](../../features/cruise/icbm.md) for automatic cruise speed management. Both CAN and CAN FD vehicles are supported.
+
+<details><summary>Technical details</summary>
+
+- **CAN vehicles:** ICBM sends cruise button commands via the CLU11 message
+- **CAN FD vehicles:** ICBM uses button counter cycling
+
+</details>
+
+ICBM appears in [Cruise Settings](../cruise/index.md) when a supported vehicle is connected.
+
+---
+
 ## Non-SCC Vehicle Support
 
 sunnypilot supports certain Hyundai, Kia, and Genesis vehicles that lack factory Smart Cruise Control (SCC). This includes ICE, Hybrid, and EV variants. On these vehicles, sunnypilot uses alternative CAN message parsing to provide steering assistance. No longitudinal control is available — steering-only.

@@ -57,9 +57,11 @@ Forces the torque controller to use your fixed custom values instead of the lear
 
 ## Lateral Acceleration Factor
 
-A slider that controls the lateral acceleration gain. Use the **-** and **+** buttons to adjust. The value displays as a decimal (e.g., 1.50 means 1.50x lateral acceleration factor).
+A slider that controls the lateral acceleration gain. Use the **-** and **+** buttons to adjust. The value displays with units (e.g., 1.50 m/s^2).
 
 Higher values produce more aggressive steering response. Lower values produce softer response.
+
+The title dynamically indicates the tuning scope: **(Real-Time & Offline)** when Manual Real-Time Tuning is enabled, or **(Offline Only)** when it is disabled.
 
 !!! note "Availability"
     This slider only appears when **Enable Custom Tuning** is enabled.
@@ -71,6 +73,8 @@ Higher values produce more aggressive steering response. Lower values produce so
 A slider that controls the friction compensation factor. Use the **-** and **+** buttons to adjust. The value displays as a decimal (e.g., 0.75).
 
 Adjusts how much the system compensates for steering friction in your vehicle.
+
+The title dynamically indicates the tuning scope: **(Real-Time & Offline)** when Manual Real-Time Tuning is enabled, or **(Offline Only)** when it is disabled.
 
 !!! note "Availability"
     This slider only appears when **Enable Custom Tuning** is enabled.
