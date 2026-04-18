@@ -35,7 +35,22 @@ from nav_parser import NavEntry, parse_all
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DOCS_DIR = REPO_ROOT / "docs"
 ZENSICAL_TOML = REPO_ROOT / "zensical.toml"
-GITHUB_REF_NAME = os.environ.get("GITHUB_REF_NAME", "master")
+
+
+def _resolve_ref_name() -> str:
+  """Return the Git ref used in the footer "Suggest changes" link.
+
+  ``DOCS_SYNC_REF_NAME`` takes precedence so callers (notably the PR
+  preview CI step) can force the ref to the base branch; the built-in
+  ``GITHUB_REF_NAME`` is reserved by GitHub Actions and step-level
+  ``env:`` blocks cannot override it, so we cannot rely on it alone in
+  pull-request runs.  Falls back to ``"master"`` for local dev.
+  """
+  return (
+    os.environ.get("DOCS_SYNC_REF_NAME")
+    or os.environ.get("GITHUB_REF_NAME")
+    or "master"
+  )
 
 SKIP_INDEX_FILES = frozenset({"index.md", "README.md"})
 
@@ -177,7 +192,7 @@ def build_footer(doc_path: str) -> str:
   """Build the sync footer with GitHub link and sync ID."""
   gh_url = (
     f"https://github.com/sunnypilot/user-docs/blob/"
-    f"{GITHUB_REF_NAME}/docs/{doc_path}"
+    f"{_resolve_ref_name()}/docs/{doc_path}"
   )
   return (
     "\n\n---\n"

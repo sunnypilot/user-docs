@@ -154,11 +154,11 @@ jobs:
           # matches what sync_to_discourse.py wrote from the last master
           # push.  Otherwise build_footer embeds the PR ref (e.g.
           # "14/merge"), making every remote match check fail and
-          # inflating the preview count.
-          GITHUB_REF_NAME: ${{ github.base_ref }}
-          # Print first divergence on mismatch so CI logs reveal what
-          # drifted between local render and stored Discourse raw.
-          SYNC_DEBUG_DIFF: "1"
+          # inflating the preview count.  GitHub Actions reserves
+          # GITHUB_REF_NAME and ignores step-level env overrides, so
+          # we use a dedicated env var that _resolve_ref_name consults
+          # first.
+          DOCS_SYNC_REF_NAME: ${{ github.base_ref }}
         run: |
           ARGS="--dry-run --verbose"
           # Structural changes → full sync preview (sidebar regen eligible).
