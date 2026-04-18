@@ -150,6 +150,12 @@ jobs:
           DISCOURSE_CATEGORY_MAP: ${{ vars.DISCOURSE_CATEGORY_MAP }}
           STRUCTURAL: ${{ steps.diff.outputs.structural }}
           ONLY_ARGS: ${{ steps.diff.outputs.only_args }}
+          # Force footer GitHub link to base branch so dry-run body
+          # matches what sync_to_discourse.py wrote from the last master
+          # push.  Otherwise build_footer embeds the PR ref (e.g.
+          # "14/merge"), making every remote match check fail and
+          # inflating the preview count.
+          GITHUB_REF_NAME: ${{ github.base_ref }}
         run: |
           ARGS="--dry-run --verbose"
           # Structural changes → full sync preview (sidebar regen eligible).
