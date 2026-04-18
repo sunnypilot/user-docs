@@ -95,16 +95,57 @@ def _body_matches_discourse(local_body: str, remote_raw: str | None) -> bool:
 
 
 def _post_body_matches_remote(
-  client: DiscourseClient, post_id: int, local_body: str,
+  client: DiscourseClient,
+  post_id: int,
+  local_body: str,
+  *,
+  debug_label: str | None = None,
 ) -> bool:
   """Fetch remote post raw and return True if it matches local_body.
 
   Centralizes the fetch-and-compare pattern so both dry-run and live
   paths make the same authoritative no-op decision.
+
+  When ``SYNC_DEBUG_DIFF`` is set in the environment and a mismatch is
+  detected, print the first divergent line pair to aid diagnosis of
+  unexpected drift (e.g. forum URL differences, hidden whitespace, or
+  Discourse-side reformatting).
   """
   time.sleep(1.0)
   remote_raw = client.get_post_raw(post_id)
-  return _body_matches_discourse(local_body, remote_raw)
+  matches = _body_matches_discourse(local_body, remote_raw)
+  if (
+    not matches
+    and os.environ.get("SYNC_DEBUG_DIFF")
+    and debug_label is not None
+  ):
+    _print_first_divergence(debug_label, local_body, remote_raw)
+  return matches
+
+
+def _print_first_divergence(
+  label: str, local_body: str, remote_raw: str | None,
+) -> None:
+  """Print the first point where normalized local and remote diverge."""
+  if remote_raw is None:
+    print(f"  DEBUG {label}: remote is None (get_post_raw failed)")
+    return
+
+  def _norm(s: str) -> list[str]:
+    return [line.rstrip() for line in s.splitlines()]
+
+  local_lines = _norm(local_body)
+  remote_lines = _norm(remote_raw)
+  limit = max(len(local_lines), len(remote_lines))
+  for i in range(limit):
+    local = local_lines[i] if i < len(local_lines) else "<EOF>"
+    remote = remote_lines[i] if i < len(remote_lines) else "<EOF>"
+    if local != remote:
+      print(f"  DEBUG {label}: first diff at line {i + 1}")
+      print(f"    local : {local[:200]!r}")
+      print(f"    remote: {remote[:200]!r}")
+      return
+  print(f"  DEBUG {label}: normalized lines equal but match returned False")
 
 
 def _topic_metadata_differs(
@@ -386,7 +427,10 @@ def _generate_sidebars(
         )
         continue
 
-      if _post_body_matches_remote(client, post_id, combined):
+      if _post_body_matches_remote(
+        client, post_id, combined,
+        debug_label=f"sidebar {section_title} (cat {category_id})",
+      ):
         if verbose:
           print(
             f"  SKIP sidebar (discourse up-to-date): "
@@ -650,7 +694,9 @@ def sync_docs(args: argparse.Namespace) -> None:
         stats["failed"] += 1
         continue
 
-      if _post_body_matches_remote(client, post_id, body):
+      if _post_body_matches_remote(
+        client, post_id, body, debug_label=f"index {label}",
+      ):
         if args.verbose:
           print(f"  SKIP (discourse up-to-date): {label}")
         stats["skipped_discourse_match"] += 1
@@ -696,7 +742,9 @@ def sync_docs(args: argparse.Namespace) -> None:
         stats["failed"] += 1
         continue
 
-      if _post_body_matches_remote(client, post_id, body):
+      if _post_body_matches_remote(
+        client, post_id, body, debug_label=f"topic {topic_id} {label}",
+      ):
         if args.verbose:
           print(f"  SKIP (discourse up-to-date): {label}")
         stats["skipped_discourse_match"] += 1
@@ -754,7 +802,10 @@ def sync_docs(args: argparse.Namespace) -> None:
           stats["failed"] += 1
           continue
 
-        if _post_body_matches_remote(client, post_id, body):
+        if _post_body_matches_remote(
+          client, post_id, body,
+          debug_label=f"title-fallback {found_id} {label}",
+        ):
           if args.verbose:
             print(f"  SKIP (discourse up-to-date): {label}")
           stats["skipped_discourse_match"] += 1

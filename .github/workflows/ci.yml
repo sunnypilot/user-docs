@@ -156,6 +156,9 @@ jobs:
           # "14/merge"), making every remote match check fail and
           # inflating the preview count.
           GITHUB_REF_NAME: ${{ github.base_ref }}
+          # Print first divergence on mismatch so CI logs reveal what
+          # drifted between local render and stored Discourse raw.
+          SYNC_DEBUG_DIFF: "1"
         run: |
           ARGS="--dry-run --verbose"
           # Structural changes → full sync preview (sidebar regen eligible).
