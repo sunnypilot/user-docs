@@ -464,6 +464,355 @@ def test_sync_docs_skips_when_discourse_matches():
 
 
 # ---------------------------------------------------------------------------
+# --only filter + idempotency guarantees
+# ---------------------------------------------------------------------------
+
+
+def _build_two_doc_workspace(tmpdir: str) -> tuple[Path, Path]:
+  """Create a docs tree with two docs under getting-started.
+
+  Returns ``(docs_dir, toml_path)``.
+  """
+  docs_dir = Path(tmpdir) / "docs"
+  docs_dir.mkdir()
+  gs_dir = docs_dir / "getting-started"
+  gs_dir.mkdir()
+
+  (gs_dir / "doc-a.md").write_text(
+    "---\ntitle: Doc A\n---\n\n# Doc A\n\nAlpha content.\n"
+  )
+  (gs_dir / "doc-b.md").write_text(
+    "---\ntitle: Doc B\n---\n\n# Doc B\n\nBravo content.\n"
+  )
+
+  toml_path = Path(tmpdir) / "zensical.toml"
+  toml_path.write_text(textwrap.dedent("""\
+    [project]
+    docs_dir = "docs"
+    nav = [
+      { "Getting Started" = [
+      { "Doc A" = "getting-started/doc-a.md" },
+      { "Doc B" = "getting-started/doc-b.md" },
+      ]},
+    ]
+  """))
+  return docs_dir, toml_path
+
+
+def _patch_cache_dir(tmpdir: str) -> patch:
+  """Redirect the content cache to an isolated per-test directory."""
+  cache_dir = Path(tmpdir) / ".cache"
+  return patch("sync_to_discourse.ContentCache", lambda: _ephemeral_cache(cache_dir))
+
+
+def _ephemeral_cache(cache_dir: Path):
+  from content_cache import ContentCache
+  return ContentCache(cache_dir=cache_dir)
+
+
+def test_sync_docs_only_filter_restricts_pass2():
+  """--only restricts Pass 2 to listed paths; others are not processed."""
+  with tempfile.TemporaryDirectory() as tmpdir:
+    docs_dir, toml_path = _build_two_doc_workspace(tmpdir)
+
+    env = {
+      "DISCOURSE_URL": "https://community.sunnypilot.ai",
+      "DISCOURSE_API_KEY": "test-key",
+      "DISCOURSE_CATEGORY_MAP": '{"getting-started": 133}',
+    }
+    args = argparse.Namespace(
+      dry_run=True, verbose=True, force=True,
+      only=["getting-started/doc-a.md"],
+    )
+
+    with (
+      patch.dict("os.environ", env, clear=False),
+      patch("sync_to_discourse.DOCS_DIR", docs_dir),
+      patch("sync_to_discourse.ZENSICAL_TOML", toml_path),
+      _patch_cache_dir(tmpdir),
+      patch("urllib.request.urlopen") as mock_urlopen,
+    ):
+      mock_urlopen.return_value = _mock_response({"topics": []})
+
+      # Capture printed output to verify only doc-a is mentioned in Pass 2
+      import io
+      import contextlib
+      buf = io.StringIO()
+      with contextlib.redirect_stdout(buf):
+        sync_docs(args)
+      output = buf.getvalue()
+
+    assert "doc-a.md" in output, "Filtered doc must appear in dry-run output"
+    # doc-b.md must not appear in Pass 2 processing lines
+    pass2_section = output.split("Pass 2: Syncing content...", 1)[1]
+    pass2_end = pass2_section.split("Sync Summary", 1)[0]
+    assert "doc-b.md" not in pass2_end, (
+      f"Excluded doc must not be processed in Pass 2. Found in:\n{pass2_end}"
+    )
+    assert "Skipping sidebar generation" in output, (
+      "Filtered runs must skip sidebar generation"
+    )
+
+  print("  PASS: sync_docs_only_filter_restricts_pass2")
+
+
+def test_sync_docs_only_filter_warns_on_unknown_path():
+  """--only paths not in zensical.toml produce a WARN, not an error."""
+  with tempfile.TemporaryDirectory() as tmpdir:
+    docs_dir, toml_path = _build_two_doc_workspace(tmpdir)
+
+    env = {
+      "DISCOURSE_URL": "https://community.sunnypilot.ai",
+      "DISCOURSE_API_KEY": "test-key",
+      "DISCOURSE_CATEGORY_MAP": '{"getting-started": 133}',
+    }
+    args = argparse.Namespace(
+      dry_run=True, verbose=True, force=True,
+      only=["getting-started/doc-a.md", "getting-started/ghost.md"],
+    )
+
+    with (
+      patch.dict("os.environ", env, clear=False),
+      patch("sync_to_discourse.DOCS_DIR", docs_dir),
+      patch("sync_to_discourse.ZENSICAL_TOML", toml_path),
+      _patch_cache_dir(tmpdir),
+      patch("urllib.request.urlopen") as mock_urlopen,
+    ):
+      mock_urlopen.return_value = _mock_response({"topics": []})
+
+      import io
+      import contextlib
+      buf = io.StringIO()
+      with contextlib.redirect_stdout(buf):
+        sync_docs(args)
+      output = buf.getvalue()
+
+    assert "WARN: --only paths not present" in output
+    assert "getting-started/ghost.md" in output
+    assert "doc-a.md" in output
+
+  print("  PASS: sync_docs_only_filter_warns_on_unknown_path")
+
+
+def test_sync_docs_dry_run_counts_match_as_skip_not_update():
+  """Dry-run must fetch remote and classify matching content as skipped."""
+  with tempfile.TemporaryDirectory() as tmpdir:
+    docs_dir, toml_path = _build_two_doc_workspace(tmpdir)
+
+    env = {
+      "DISCOURSE_URL": "https://community.sunnypilot.ai",
+      "DISCOURSE_API_KEY": "test-key",
+      "DISCOURSE_CATEGORY_MAP": '{"getting-started": 133}',
+    }
+    # Force=True bypasses content cache so remote check becomes authoritative.
+    args = argparse.Namespace(
+      dry_run=True, verbose=True, force=True,
+      only=["getting-started/doc-a.md"],
+    )
+
+    def side_effect(req):
+      url = req.full_url
+      method = req.method
+      if method == "GET" and "/search.json" in url:
+        # Resolve via sync-id
+        return _mock_response({"topics": [{"id": 500, "title": "Doc A"}]})
+      if method == "GET" and url.endswith("/t/500.json"):
+        return _mock_response({
+          "id": 500,
+          "title": "Doc A",
+          "category_id": 133,
+          "post_stream": {"posts": [{"id": 900, "post_number": 1}]},
+        })
+      if method == "GET" and url.endswith("/posts/900.json"):
+        # Return what _post_body_matches_remote will compare against.
+        # Patching _body_matches_discourse below makes this trivial.
+        return _mock_response({"id": 900, "raw": "whatever"})
+      return _mock_response({})
+
+    with (
+      patch.dict("os.environ", env, clear=False),
+      patch("sync_to_discourse.DOCS_DIR", docs_dir),
+      patch("sync_to_discourse.ZENSICAL_TOML", toml_path),
+      _patch_cache_dir(tmpdir),
+      patch("sync_to_discourse.time") as mock_time,
+      patch("urllib.request.urlopen") as mock_urlopen,
+      patch("sync_to_discourse._body_matches_discourse", return_value=True),
+    ):
+      mock_time.sleep = MagicMock()
+      mock_urlopen.side_effect = side_effect
+
+      import io
+      import contextlib
+      buf = io.StringIO()
+      with contextlib.redirect_stdout(buf):
+        sync_docs(args)
+      output = buf.getvalue()
+
+    # Should skip, not "Would update"
+    assert "Would update" not in output, (
+      f"Dry-run must not count matching remote as update:\n{output}"
+    )
+    assert "SKIP (discourse up-to-date)" in output, (
+      f"Must log skip for matching remote:\n{output}"
+    )
+    # Summary line must show 1 skipped discourse match
+    assert "Skipped (Discourse Match): 1" in output
+    assert "Updated (Normal):      0" in output
+
+  print("  PASS: sync_docs_dry_run_counts_match_as_skip_not_update")
+
+
+def test_sidebar_skips_update_when_remote_matches():
+  """_generate_sidebars must fetch remote and skip unchanged sidebars."""
+  from sync_to_discourse import _generate_sidebars
+
+  with tempfile.TemporaryDirectory() as tmpdir:
+    docs_dir, toml_path = _build_two_doc_workspace(tmpdir)
+    # Add an index so there's something to render
+    (docs_dir / "getting-started" / "index.md").write_text(
+      "# Getting Started\n\nIntro text.\n"
+    )
+
+    env = {
+      "DISCOURSE_URL": "https://community.sunnypilot.ai",
+      "DISCOURSE_API_KEY": "test-key",
+      "DISCOURSE_CATEGORY_MAP": '{"getting-started": 133}',
+    }
+    config = DiscourseConfig(
+      base_url=env["DISCOURSE_URL"],
+      api_key=env["DISCOURSE_API_KEY"],
+      category_mapping={"getting-started": 133},
+    )
+    client = DiscourseClient(config)
+    stats = {
+      "sidebars_updated": 0,
+      "skipped_sidebar_match": 0,
+    }
+    synced_topics = {
+      "getting-started/doc-a.md": 501,
+      "getting-started/doc-b.md": 502,
+    }
+
+    def side_effect(req):
+      url = req.full_url
+      method = req.method
+      if method == "GET" and "/c/133/show.json" in url:
+        return _mock_response({
+          "category": {"topic_url": "/t/about-getting-started/700"},
+        })
+      if method == "GET" and url.endswith("/t/700.json"):
+        return _mock_response({
+          "post_stream": {"posts": [{"id": 800, "post_number": 1}]},
+        })
+      if method == "GET" and url.endswith("/posts/800.json"):
+        return _mock_response({"id": 800, "raw": "matches"})
+      # Any PUT/POST would indicate an unwanted update
+      raise AssertionError(f"Unexpected {method} to {url}")
+
+    with (
+      patch.dict("os.environ", env, clear=False),
+      patch("sync_to_discourse.ZENSICAL_TOML", toml_path),
+      patch("sync_to_discourse.time") as mock_time,
+      patch("urllib.request.urlopen") as mock_urlopen,
+      patch("sync_to_discourse._body_matches_discourse", return_value=True),
+    ):
+      mock_time.sleep = MagicMock()
+      mock_urlopen.side_effect = side_effect
+
+      _generate_sidebars(
+        config=config,
+        client=client,
+        synced_topics=synced_topics,
+        index_contents={"getting-started/index.md": "Intro.\n"},
+        dry_run=False,
+        verbose=True,
+        stats=stats,
+      )
+
+    assert stats["skipped_sidebar_match"] == 1, (
+      f"Matching sidebar must be skipped, got stats={stats}"
+    )
+    assert stats["sidebars_updated"] == 0, (
+      f"No sidebars should have updated, got stats={stats}"
+    )
+
+  print("  PASS: sidebar_skips_update_when_remote_matches")
+
+
+def test_update_topic_skipped_when_metadata_matches():
+  """update_topic PUT must be suppressed when title + category already match."""
+  with tempfile.TemporaryDirectory() as tmpdir:
+    docs_dir, toml_path = _build_two_doc_workspace(tmpdir)
+
+    env = {
+      "DISCOURSE_URL": "https://community.sunnypilot.ai",
+      "DISCOURSE_API_KEY": "test-key",
+      "DISCOURSE_CATEGORY_MAP": '{"getting-started": 133}',
+    }
+    args = argparse.Namespace(
+      dry_run=False, verbose=True, force=True,
+      only=["getting-started/doc-a.md"],
+    )
+
+    calls: list[tuple[str, str, bytes | None]] = []
+
+    def side_effect(req):
+      url = req.full_url
+      method = req.method
+      data = req.data
+      calls.append((method, url, data))
+
+      if method == "GET" and "/search.json" in url:
+        return _mock_response({"topics": [{"id": 500, "title": "Doc A"}]})
+      if method == "GET" and url.endswith("/t/500.json"):
+        # Metadata check + first_post_id both hit this endpoint;
+        # return matching metadata + post stream
+        return _mock_response({
+          "id": 500,
+          "title": "Doc A",
+          "category_id": 133,
+          "post_stream": {"posts": [{"id": 900, "post_number": 1}]},
+        })
+      if method == "GET" and url.endswith("/posts/900.json"):
+        return _mock_response({"id": 900, "raw": "body-differs"})
+      if method == "PUT" and url.endswith("/posts/900.json"):
+        return _mock_response({"post": {"id": 900}})
+      return _mock_response({})
+
+    with (
+      patch.dict("os.environ", env, clear=False),
+      patch("sync_to_discourse.DOCS_DIR", docs_dir),
+      patch("sync_to_discourse.ZENSICAL_TOML", toml_path),
+      _patch_cache_dir(tmpdir),
+      patch("sync_to_discourse.time") as mock_time,
+      patch("urllib.request.urlopen") as mock_urlopen,
+    ):
+      mock_time.sleep = MagicMock()
+      mock_urlopen.side_effect = side_effect
+      # Force body mismatch so update_post fires; metadata check then runs
+      with patch(
+        "sync_to_discourse._body_matches_discourse", return_value=False,
+      ):
+        sync_docs(args)
+
+    # Must PUT the post (body changed), but MUST NOT PUT the topic
+    put_topic_calls = [
+      (m, u) for m, u, _ in calls
+      if m == "PUT" and "/t/-/" in u
+    ]
+    put_post_calls = [
+      (m, u) for m, u, _ in calls
+      if m == "PUT" and "/posts/" in u
+    ]
+    assert put_post_calls, f"Post should be updated when body differs: {calls}"
+    assert not put_topic_calls, (
+      f"Topic metadata matches — no update_topic PUT expected. Got: {put_topic_calls}"
+    )
+
+  print("  PASS: update_topic_skipped_when_metadata_matches")
+
+
+# ---------------------------------------------------------------------------
 # Runner
 # ---------------------------------------------------------------------------
 
@@ -503,6 +852,12 @@ if __name__ == "__main__":
     # Integration
     test_sync_docs_dry_run,
     test_sync_docs_skips_when_discourse_matches,
+    # --only filter + idempotency
+    test_sync_docs_only_filter_restricts_pass2,
+    test_sync_docs_only_filter_warns_on_unknown_path,
+    test_sync_docs_dry_run_counts_match_as_skip_not_update,
+    test_sidebar_skips_update_when_remote_matches,
+    test_update_topic_skipped_when_metadata_matches,
   ]
   passed = 0
   failed = 0
