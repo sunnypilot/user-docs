@@ -14,16 +14,23 @@ Information about sunnypilot behavior on GM and Chevrolet vehicles. These notes 
 
 sunnypilot supports certain GM vehicles that lack factory Adaptive Cruise Control (ACC). On these vehicles, cruise control state is read from the Engine Control Module (ECM) instead of the ACC module. This enables steering-only assistance on platforms that would otherwise be unsupported.
 
-Supported Non-ACC vehicles:
+### Published Vehicles
+
+These vehicles are published in sunnypilot's official supported vehicle list and have been community-tested:
 
 - Chevrolet Bolt 2017
 - Chevrolet Bolt 2018-21
 - Chevrolet Bolt EUV/EV 2022-23
 - Chevrolet Equinox 2019-22
+- Chevrolet Malibu 2016-23
+
+### Community-Validated Vehicles
+
+These vehicles have fingerprints in sunnypilot and require community testing before official support:
+
 - Chevrolet Suburban 2016-20
 - Cadillac CT6 2017-18
 - Chevrolet Trailblazer 2021-22
-- Chevrolet Malibu 2016-23
 - Cadillac XT5 2018
 
 !!! info "Driving Restrictions"

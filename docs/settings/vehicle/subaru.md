@@ -31,3 +31,27 @@ Enables stop-and-go for Subaru Global models equipped with a manual handbrake (l
 
 !!! note "Availability"
     Can only be changed while the device is offroad. Not available on Global Gen2 or Hybrid platforms.
+
+---
+
+## Pre-Global Vehicle Support
+
+sunnypilot supports Pre-Global Subaru platforms that upstream openpilot treats as dashcam-only. These older model years have simplified CAN architecture and require specialized handling.
+
+Supported Pre-Global vehicles:
+
+| Vehicle | Years |
+|---------|-------|
+| Subaru Forester | 2017-2018 |
+| Subaru Legacy | 2015-2018 |
+| Subaru Outback | 2015-2017 |
+| Subaru Outback | 2018-2019 |
+
+!!! warning "Steering Only"
+    Alpha Longitudinal not available on Pre-Global platforms. Stop-and-go resume works, but no cruise speed adjustment.
+
+!!! note "MADS"
+    MADS LKAS button detection not available on Pre-Global vehicles.
+
+!!! warning "Testing Status"
+    Pre-Global platforms have active steering enabled on sunnypilot (overriding upstream's dashcam-only default) but have limited community mileage. Validate real-world behavior before relying on them for daily driving.
