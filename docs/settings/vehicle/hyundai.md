@@ -90,15 +90,11 @@ sunnypilot supports certain Hyundai, Kia, and Genesis vehicles that lack factory
 
 Supported Non-SCC vehicles:
 
-- Hyundai Bayon
 - Hyundai Elantra 2022
-- Hyundai Kona
-- Hyundai Kona EV
+- Hyundai Kona 2019
+- Hyundai Kona EV 2019
 - Kia Ceed PHEV 2022
 - Kia Forte 2019
-- Kia Forte 2021
-- Kia Seltos 2023
-- Genesis G70 2021
 
 !!! warning "Testing Status"
     Some Non-SCC platforms are in dashcam mode (untested). These vehicles run sunnypilot in a monitoring-only mode until community testing validates full steering support.
