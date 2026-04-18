@@ -98,6 +98,15 @@ jobs:
           DISCOURSE_URL: ${{ secrets.DISCOURSE_URL }}
         run: |
           set -euo pipefail
+          # GitHub Actions auto-populates GITHUB_REF_NAME with the PR
+          # merge ref (e.g. "14/merge") and silently ignores step-level
+          # env overrides for reserved names.  The base worktree's copy
+          # of sync_to_discourse.py (pre-DOCS_SYNC_REF_NAME) reads it at
+          # import time, which would embed the PR ref in every base
+          # render's footer and make every doc hash differ.  Unset it
+          # so both renders fall through to DOCS_SYNC_REF_NAME=master.
+          unset GITHUB_REF_NAME
+
           git fetch --depth=1 origin "$BASE_REF"
           BASE_SHA=$(git rev-parse "origin/$BASE_REF")
           echo "Base: $BASE_REF ($BASE_SHA)"
