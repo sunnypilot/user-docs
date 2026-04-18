@@ -69,7 +69,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          # Need history to compute diff vs base branch
           fetch-depth: 0
 
       - name: Restore Discourse sync cache
@@ -98,65 +97,39 @@ jobs:
           DISCOURSE_URL: ${{ secrets.DISCOURSE_URL }}
         run: |
           set -euo pipefail
-          # GitHub Actions auto-populates GITHUB_REF_NAME with the PR
-          # merge ref (e.g. "14/merge") and silently ignores step-level
-          # env overrides for reserved names.  The base worktree's copy
-          # of sync_to_discourse.py (pre-DOCS_SYNC_REF_NAME) reads it at
-          # import time, which would embed the PR ref in every base
-          # render's footer and make every doc hash differ.  Unset it
-          # so both renders fall through to DOCS_SYNC_REF_NAME=master.
+          # GHA reserves GITHUB_REF_NAME; unset so base worktree's
+          # pre-DOCS_SYNC_REF_NAME sync_to_discourse.py also falls back to master.
           unset GITHUB_REF_NAME
 
           git fetch --depth=1 origin "$BASE_REF"
           BASE_SHA=$(git rev-parse "origin/$BASE_REF")
           echo "Base: $BASE_REF ($BASE_SHA)"
 
-          # Render every nav doc at HEAD (PR) and at the base commit,
-          # then diff the content hashes.  This surfaces exactly the
-          # docs whose sync-rendered body would differ between master
-          # and this PR merged — including changes introduced by
-          # edits to zensical.toml, tools/converter.py, or anything
-          # else that influences rendering.
           uv run --python 3.12 python tools/render_docs.py > /tmp/head_hashes.json
 
           WORKTREE=$(mktemp -d)
           git worktree add --detach "$WORKTREE" "$BASE_SHA"
-          # render_docs.py may not exist on the base branch yet; copy
-          # the current HEAD version in so we can render base content
-          # with whichever render entry point exists today.  The imports
-          # it pulls (converter, nav_parser, sync_to_discourse) still
-          # resolve to the worktree copies, so tools changes on HEAD
-          # vs base are captured in the hash diff.
           cp tools/render_docs.py "$WORKTREE/tools/render_docs.py"
-          (
-            cd "$WORKTREE"
-            uv run --python 3.12 python tools/render_docs.py > /tmp/base_hashes.json
-          )
+          (cd "$WORKTREE" && uv run --python 3.12 python tools/render_docs.py > /tmp/base_hashes.json)
           git worktree remove --force "$WORKTREE"
 
           python3 - <<'PY' > /tmp/affected.txt
           import json
-          head = json.load(open('/tmp/head_hashes.json'))
-          base = json.load(open('/tmp/base_hashes.json'))
-          for path in sorted(set(head) | set(base)):
-              if head.get(path) != base.get(path):
-                  print(path)
+          h = json.load(open('/tmp/head_hashes.json'))
+          b = json.load(open('/tmp/base_hashes.json'))
+          for p in sorted(set(h) | set(b)):
+              if h.get(p) != b.get(p):
+                  print(p)
           PY
 
           AFFECTED=$(cat /tmp/affected.txt || true)
           echo "AFFECTED_DOCS:"
           printf '%s\n' "$AFFECTED"
 
-          ANY_CHANGE=""
-          [ -n "$AFFECTED" ] && ANY_CHANGE="1"
-
           ONLY_ARGS=$(printf '%s ' $AFFECTED)
           ONLY_ARGS=${ONLY_ARGS% }
-
-          DOC_COUNT=0
-          if [ -n "$AFFECTED" ]; then
-            DOC_COUNT=$(printf '%s\n' "$AFFECTED" | wc -l | tr -d ' ')
-          fi
+          DOC_COUNT=$([ -n "$AFFECTED" ] && printf '%s\n' "$AFFECTED" | wc -l | tr -d ' ' || echo 0)
+          ANY_CHANGE=$([ -n "$AFFECTED" ] && echo 1 || echo "")
 
           {
             echo "any_change=$ANY_CHANGE"
@@ -172,14 +145,6 @@ jobs:
           DISCOURSE_API_USER: ${{ secrets.DISCOURSE_API_USER }}
           DISCOURSE_CATEGORY_MAP: ${{ vars.DISCOURSE_CATEGORY_MAP }}
           ONLY_ARGS: ${{ steps.diff.outputs.only_args }}
-          # Force footer GitHub link to base branch so dry-run body
-          # matches what sync_to_discourse.py wrote from the last master
-          # push.  Otherwise build_footer embeds the PR ref (e.g.
-          # "14/merge"), making every remote match check fail and
-          # inflating the preview count.  GitHub Actions reserves
-          # GITHUB_REF_NAME and ignores step-level env overrides, so
-          # we use a dedicated env var that _resolve_ref_name consults
-          # first.
           DOCS_SYNC_REF_NAME: ${{ github.base_ref }}
         run: |
           uv run --python 3.12 python tools/sync_to_discourse.py \
@@ -203,11 +168,6 @@ jobs:
           UPDATED=$(grep -oP 'Updated \(Normal\):\s+\K\d+' sync_preview.txt || echo "0")
           SIDEBARS=$(grep -oP 'Sidebars Updated:\s+\K\d+' sync_preview.txt || echo "0")
           FAILED=$(grep -oP 'Failed:\s+\K\d+' sync_preview.txt || echo "0")
-          TOTAL=$(grep -oP 'Total Parsed:\s+\K\d+' sync_preview.txt || echo "0")
-
-          # Sidebar updates include every About topic (index.md) that
-          # actually differs from Discourse, so they count toward the
-          # "modified" total.
           CHANGES=$((CREATED + UPDATED + SIDEBARS))
 
           {
@@ -219,11 +179,7 @@ jobs:
             elif [ "$CHANGES" -eq 0 ]; then
               echo "Docs are up to date. No forum topic changes needed."
             else
-              SUFFIX="of ${TOTAL} total"
-              if [ -n "${{ steps.diff.outputs.only_args }}" ] && [ -z "${{ steps.diff.outputs.structural }}" ]; then
-                SUFFIX="(filtered to ${DOC_COUNT} PR-changed doc(s))"
-              fi
-              echo "**${CHANGES} topic(s) would be modified** (${CREATED} created, ${UPDATED} updated, ${SIDEBARS} index/sidebar) ${SUFFIX}."
+              echo "**${CHANGES} topic(s) would be modified** (${CREATED} created, ${UPDATED} updated, ${SIDEBARS} index/sidebar) across ${DOC_COUNT} affected doc(s)."
             fi
             if [ "$FAILED" -ne 0 ]; then
               echo ""

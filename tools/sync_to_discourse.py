@@ -37,15 +37,9 @@ DOCS_DIR = REPO_ROOT / "docs"
 ZENSICAL_TOML = REPO_ROOT / "zensical.toml"
 
 
+# DOCS_SYNC_REF_NAME overrides GITHUB_REF_NAME because GitHub Actions
+# reserves GITHUB_* and ignores step-level env overrides in PR runs.
 def _resolve_ref_name() -> str:
-  """Return the Git ref used in the footer "Suggest changes" link.
-
-  ``DOCS_SYNC_REF_NAME`` takes precedence so callers (notably the PR
-  preview CI step) can force the ref to the base branch; the built-in
-  ``GITHUB_REF_NAME`` is reserved by GitHub Actions and step-level
-  ``env:`` blocks cannot override it, so we cannot rely on it alone in
-  pull-request runs.  Falls back to ``"master"`` for local dev.
-  """
   return (
     os.environ.get("DOCS_SYNC_REF_NAME")
     or os.environ.get("GITHUB_REF_NAME")
@@ -110,81 +104,23 @@ def _body_matches_discourse(local_body: str, remote_raw: str | None) -> bool:
 
 
 def _post_body_matches_remote(
-  client: DiscourseClient,
-  post_id: int,
-  local_body: str,
-  *,
-  debug_label: str | None = None,
+  client: DiscourseClient, post_id: int, local_body: str,
 ) -> bool:
-  """Fetch remote post raw and return True if it matches local_body.
-
-  Centralizes the fetch-and-compare pattern so both dry-run and live
-  paths make the same authoritative no-op decision.
-
-  When ``SYNC_DEBUG_DIFF`` is set in the environment and a mismatch is
-  detected, print the first divergent line pair to aid diagnosis of
-  unexpected drift (e.g. forum URL differences, hidden whitespace, or
-  Discourse-side reformatting).
-  """
   time.sleep(1.0)
-  remote_raw = client.get_post_raw(post_id)
-  matches = _body_matches_discourse(local_body, remote_raw)
-  if (
-    not matches
-    and os.environ.get("SYNC_DEBUG_DIFF")
-    and debug_label is not None
-  ):
-    _print_first_divergence(debug_label, local_body, remote_raw)
-  return matches
-
-
-def _print_first_divergence(
-  label: str, local_body: str, remote_raw: str | None,
-) -> None:
-  """Print the first point where normalized local and remote diverge."""
-  if remote_raw is None:
-    print(f"  DEBUG {label}: remote is None (get_post_raw failed)")
-    return
-
-  def _norm(s: str) -> list[str]:
-    return [line.rstrip() for line in s.splitlines()]
-
-  local_lines = _norm(local_body)
-  remote_lines = _norm(remote_raw)
-  limit = max(len(local_lines), len(remote_lines))
-  for i in range(limit):
-    local = local_lines[i] if i < len(local_lines) else "<EOF>"
-    remote = remote_lines[i] if i < len(remote_lines) else "<EOF>"
-    if local != remote:
-      print(f"  DEBUG {label}: first diff at line {i + 1}")
-      print(f"    local : {local[:200]!r}")
-      print(f"    remote: {remote[:200]!r}")
-      return
-  print(f"  DEBUG {label}: normalized lines equal but match returned False")
+  return _body_matches_discourse(local_body, client.get_post_raw(post_id))
 
 
 def _topic_metadata_differs(
-  client: DiscourseClient,
-  topic_id: int,
-  new_title: str,
-  new_category_id: int,
+  client: DiscourseClient, topic_id: int,
+  new_title: str, new_category_id: int,
 ) -> bool:
-  """Return True if topic's current title or category differs from target.
-
-  Used to gate ``update_topic`` calls so Discourse is only mutated
-  when metadata truly needs to change.  A failed fetch returns True
-  (update defensively) so transient read errors do not silently drop
-  legitimate metadata updates.
-  """
   time.sleep(1.0)
   topic = client.get_topic(topic_id)
   if topic is None:
     return True
-  current_title = (topic.get("title") or "").strip()
-  current_category = topic.get("category_id")
   return (
-    current_title != new_title.strip()
-    or current_category != new_category_id
+    (topic.get("title") or "").strip() != new_title.strip()
+    or topic.get("category_id") != new_category_id
   )
 
 
@@ -442,10 +378,7 @@ def _generate_sidebars(
         )
         continue
 
-      if _post_body_matches_remote(
-        client, post_id, combined,
-        debug_label=f"sidebar {section_title} (cat {category_id})",
-      ):
+      if _post_body_matches_remote(client, post_id, combined):
         if verbose:
           print(
             f"  SKIP sidebar (discourse up-to-date): "
@@ -566,30 +499,18 @@ def sync_docs(args: argparse.Namespace) -> None:
 
   all_entries = parse_all(ZENSICAL_TOML)
 
-  # Optional path filter (e.g. from PR preview) — restrict which docs
-  # Pass 2 and sidebar generation consider.  Pass 1 still resolves all
-  # topic IDs so internal .md -> /t/ link rewriting remains correct.
-  only_paths: set[str] | None = None
   raw_only = getattr(args, "only", None)
-  if raw_only:
-    only_paths = {p.strip() for p in raw_only if p.strip()}
+  only_paths = {p.strip() for p in raw_only if p.strip()} if raw_only else None
 
   if only_paths is not None:
     entries = [e for e in all_entries if e.path in only_paths]
     missing = sorted(only_paths - {e.path for e in all_entries})
     if missing:
-      print(
-        "  WARN: --only paths not present in zensical.toml, ignoring: "
-        f"{missing}"
-      )
+      print(f"  WARN: --only paths not in zensical.toml, ignoring: {missing}")
   else:
     entries = all_entries
 
-  # Sidebar regeneration rebuilds all 8 section About topics from the
-  # full index_contents map.  A filtered run cannot populate every
-  # section without reading the whole nav, so we always skip sidebar
-  # generation when --only is set.  Nav/index changes must trigger a
-  # full run (no --only) to refresh sidebars.
+  # Sidebar gen requires the full index_contents map; filtered runs skip it.
   skip_sidebars = only_paths is not None
 
   stats: dict[str, int] = {
@@ -608,11 +529,7 @@ def sync_docs(args: argparse.Namespace) -> None:
   # Store converted index.md content for sidebar combination
   index_contents: dict[str, str] = {}
 
-  filter_note = (
-    f" (filtered to {len(entries)} of {len(all_entries)})"
-    if only_paths is not None
-    else ""
-  )
+  filter_note = f" (filtered to {len(entries)} of {len(all_entries)})" if only_paths else ""
   print(f"Sync: {len(entries)} entries from zensical.toml{filter_note}")
   print(f"  Discourse: {config.base_url}")
   print(f"  Dry run: {args.dry_run}")
@@ -622,9 +539,8 @@ def sync_docs(args: argparse.Namespace) -> None:
   print()
 
   # --- Pass 1: Resolve all topic IDs ---
-  # Resolve the full nav so dry-run link rewriting and sidebar lookups
-  # still find every topic when the caller only supplied a subset via
-  # --only.
+  # Resolve the full nav so link rewriting and sidebar lookups still work
+  # when the caller supplied a subset via --only.
   synced_topics = _resolve_all_topic_ids(
     all_entries, config=config, client=client, verbose=args.verbose,
   )
@@ -679,19 +595,11 @@ def sync_docs(args: argparse.Namespace) -> None:
     )
 
     if is_about_topic:
-      # Index pages are rendered by _generate_sidebars, which appends
-      # the sidebar list after the converted body.  Updating the About
-      # topic here with just body+footer would be overwritten by the
-      # sidebar pass immediately after, and the pre-update idempotency
-      # check would always see a mismatch (remote has sidebar lines,
-      # local doesn't), double-counting every index as "Would update".
-      # Defer the update to sidebar generation — it holds the authoritative
-      # combined body.
+      # About topics are owned by _generate_sidebars (body + sidebar lines).
+      # Updating here would be clobbered and the body-only idempotency check
+      # would always diverge on the sidebar block.
       if args.verbose:
-        print(
-          f"  DEFER to sidebar gen: {label} "
-          f"(about topic {synced_topics.get(entry.path)})"
-        )
+        print(f"  DEFER to sidebar gen: {label}")
       if not args.dry_run:
         cache.save(entry.path, raw_content)
       continue
@@ -706,9 +614,7 @@ def sync_docs(args: argparse.Namespace) -> None:
         stats["failed"] += 1
         continue
 
-      if _post_body_matches_remote(
-        client, post_id, body, debug_label=f"topic {topic_id} {label}",
-      ):
+      if _post_body_matches_remote(client, post_id, body):
         if args.verbose:
           print(f"  SKIP (discourse up-to-date): {label}")
         stats["skipped_discourse_match"] += 1
@@ -735,13 +641,9 @@ def sync_docs(args: argparse.Namespace) -> None:
           stats["failed"] += 1
           continue
 
-        # Update topic title and category only when drift detected
         if _topic_metadata_differs(client, topic_id, title, category_id):
           time.sleep(1.0)
-          client.update_topic(
-            topic_id, title,
-            category_id=category_id,
-          )
+          client.update_topic(topic_id, title, category_id=category_id)
         else:
           stats["skipped_metadata_match"] += 1
 
@@ -766,10 +668,7 @@ def sync_docs(args: argparse.Namespace) -> None:
           stats["failed"] += 1
           continue
 
-        if _post_body_matches_remote(
-          client, post_id, body,
-          debug_label=f"title-fallback {found_id} {label}",
-        ):
+        if _post_body_matches_remote(client, post_id, body):
           if args.verbose:
             print(f"  SKIP (discourse up-to-date): {label}")
           stats["skipped_discourse_match"] += 1
@@ -801,10 +700,7 @@ def sync_docs(args: argparse.Namespace) -> None:
 
           if _topic_metadata_differs(client, found_id, title, category_id):
             time.sleep(1.0)
-            client.update_topic(
-              found_id, title,
-              category_id=category_id,
-            )
+            client.update_topic(found_id, title, category_id=category_id)
           else:
             stats["skipped_metadata_match"] += 1
 
@@ -842,26 +738,15 @@ def sync_docs(args: argparse.Namespace) -> None:
       cache.save(entry.path, raw_content)
 
   # --- Sidebar generation ---
-  # Skip entirely when --only is set: sidebar regeneration depends on
-  # full index_contents for every section, and regenerating with a
-  # partial set would overwrite untouched About topics with placeholder
-  # text.  Nav structure changes should run without --only (driven by
-  # CI detecting zensical.toml or index.md changes).
   print()
   if skip_sidebars:
-    print(
-      "Skipping sidebar generation (filtered run without nav or index changes)"
-    )
+    print("Skipping sidebar generation (filtered run)")
   else:
     print("Generating sidebars...")
     _generate_sidebars(
-      config=config,
-      client=client,
-      synced_topics=synced_topics,
-      index_contents=index_contents,
-      dry_run=args.dry_run,
-      verbose=args.verbose,
-      stats=stats,
+      config=config, client=client, synced_topics=synced_topics,
+      index_contents=index_contents, dry_run=args.dry_run,
+      verbose=args.verbose, stats=stats,
     )
 
   # --- Summary ---
@@ -891,13 +776,8 @@ def main() -> None:
   parser.add_argument("--verbose", "-v", action="store_true", help="Print detailed progress for skipped entries.")
   parser.add_argument("--force", action="store_true", help="Bypass content cache and re-sync all entries.")
   parser.add_argument(
-    "--only",
-    nargs="+",
-    metavar="PATH",
-    help=(
-      "Restrict Pass 2 to the given doc paths (relative to docs/). "
-      "Sidebar generation is skipped when this is set."
-    ),
+    "--only", nargs="+", metavar="PATH",
+    help="Restrict Pass 2 to these doc paths; skips sidebar gen.",
   )
   args = parser.parse_args()
   sync_docs(args)

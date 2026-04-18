@@ -299,18 +299,7 @@ class DiscourseClient:
     return posts[0].get("id")
 
   def get_topic(self, topic_id: int) -> dict[str, Any] | None:
-    """Fetch full topic metadata including title and category_id.
-
-    Used to detect whether a topic's title or category differs from
-    the desired values so we can skip unnecessary update_topic calls.
-
-    Args:
-      topic_id: The Discourse topic ID.
-
-    Returns:
-      Topic dict with keys including 'title', 'category_id',
-      'post_stream', or None if the request failed.
-    """
+    """Fetch topic metadata (title, category_id, post_stream)."""
     return self._get(f"/t/{topic_id}.json")
 
   def get_post_raw(self, post_id: int) -> str | None:
