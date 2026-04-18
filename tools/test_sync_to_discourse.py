@@ -5,6 +5,8 @@ Run: python3 tools/test_sync_to_discourse.py
 """
 
 import argparse
+import contextlib
+import io
 import json
 import sys
 import tempfile
@@ -464,6 +466,198 @@ def test_sync_docs_skips_when_discourse_matches():
 
 
 # ---------------------------------------------------------------------------
+# --only filter + idempotency guarantees
+# ---------------------------------------------------------------------------
+
+_ENV = {
+  "DISCOURSE_URL": "https://community.sunnypilot.ai",
+  "DISCOURSE_API_KEY": "test-key",
+  "DISCOURSE_CATEGORY_MAP": '{"getting-started": 133}',
+}
+
+_TWO_DOC_TOML = textwrap.dedent("""\
+  [project]
+  docs_dir = "docs"
+  nav = [
+    { "Getting Started" = [
+    { "Doc A" = "getting-started/doc-a.md" },
+    { "Doc B" = "getting-started/doc-b.md" },
+    ]},
+  ]
+""")
+
+
+def _build_two_doc_workspace(tmpdir: str) -> tuple[Path, Path]:
+  docs = Path(tmpdir) / "docs" / "getting-started"
+  docs.mkdir(parents=True)
+  (docs / "doc-a.md").write_text("---\ntitle: Doc A\n---\n\n# Doc A\n\nAlpha.\n")
+  (docs / "doc-b.md").write_text("---\ntitle: Doc B\n---\n\n# Doc B\n\nBravo.\n")
+  toml = Path(tmpdir) / "zensical.toml"
+  toml.write_text(_TWO_DOC_TOML)
+  return docs.parent, toml
+
+
+def _run_sync(tmpdir, docs_dir, toml_path, args, side_effect):
+  from content_cache import ContentCache
+  cache = ContentCache(cache_dir=Path(tmpdir) / ".cache")
+  with (
+    patch.dict("os.environ", _ENV, clear=False),
+    patch("sync_to_discourse.DOCS_DIR", docs_dir),
+    patch("sync_to_discourse.ZENSICAL_TOML", toml_path),
+    patch("sync_to_discourse.ContentCache", lambda: cache),
+    patch("sync_to_discourse.time") as mock_time,
+    patch("urllib.request.urlopen") as mock_urlopen,
+  ):
+    mock_time.sleep = MagicMock()
+    mock_urlopen.side_effect = side_effect
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+      sync_docs(args)
+    return buf.getvalue(), mock_urlopen
+
+
+def test_sync_docs_only_filter_restricts_pass2():
+  with tempfile.TemporaryDirectory() as tmpdir:
+    docs_dir, toml_path = _build_two_doc_workspace(tmpdir)
+    args = argparse.Namespace(
+      dry_run=True, verbose=True, force=True,
+      only=["getting-started/doc-a.md"],
+    )
+    output, _ = _run_sync(
+      tmpdir, docs_dir, toml_path, args,
+      lambda req: _mock_response({"topics": []}),
+    )
+
+  assert "doc-a.md" in output
+  pass2 = output.split("Pass 2:", 1)[1].split("Sync Summary", 1)[0]
+  assert "doc-b.md" not in pass2
+  assert "Skipping sidebar generation" in output
+  print("  PASS: sync_docs_only_filter_restricts_pass2")
+
+
+def test_sync_docs_only_filter_warns_on_unknown_path():
+  with tempfile.TemporaryDirectory() as tmpdir:
+    docs_dir, toml_path = _build_two_doc_workspace(tmpdir)
+    args = argparse.Namespace(
+      dry_run=True, verbose=True, force=True,
+      only=["getting-started/doc-a.md", "getting-started/ghost.md"],
+    )
+    output, _ = _run_sync(
+      tmpdir, docs_dir, toml_path, args,
+      lambda req: _mock_response({"topics": []}),
+    )
+
+  assert "WARN: --only paths not in zensical.toml" in output
+  assert "getting-started/ghost.md" in output
+  print("  PASS: sync_docs_only_filter_warns_on_unknown_path")
+
+
+def test_sync_docs_dry_run_counts_match_as_skip_not_update():
+  def side_effect(req):
+    url, method = req.full_url, req.method
+    if method == "GET" and "/search.json" in url:
+      return _mock_response({"topics": [{"id": 500, "title": "Doc A"}]})
+    if method == "GET" and url.endswith("/t/500.json"):
+      return _mock_response({
+        "id": 500, "title": "Doc A", "category_id": 133,
+        "post_stream": {"posts": [{"id": 900, "post_number": 1}]},
+      })
+    if method == "GET" and url.endswith("/posts/900.json"):
+      return _mock_response({"id": 900, "raw": "whatever"})
+    return _mock_response({})
+
+  with tempfile.TemporaryDirectory() as tmpdir:
+    docs_dir, toml_path = _build_two_doc_workspace(tmpdir)
+    args = argparse.Namespace(
+      dry_run=True, verbose=True, force=True,
+      only=["getting-started/doc-a.md"],
+    )
+    with patch("sync_to_discourse._body_matches_discourse", return_value=True):
+      output, _ = _run_sync(tmpdir, docs_dir, toml_path, args, side_effect)
+
+  assert "Would update" not in output
+  assert "SKIP (discourse up-to-date)" in output
+  assert "Skipped (Discourse Match): 1" in output
+  print("  PASS: sync_docs_dry_run_counts_match_as_skip_not_update")
+
+
+def test_sidebar_skips_update_when_remote_matches():
+  from sync_to_discourse import _generate_sidebars
+
+  with tempfile.TemporaryDirectory() as tmpdir:
+    docs_dir, toml_path = _build_two_doc_workspace(tmpdir)
+    (docs_dir / "getting-started" / "index.md").write_text("# GS\n\nIntro.\n")
+    config = DiscourseConfig(
+      base_url=_ENV["DISCOURSE_URL"], api_key="k",
+      category_mapping={"getting-started": 133},
+    )
+    stats = {"sidebars_updated": 0, "skipped_sidebar_match": 0}
+
+    def side_effect(req):
+      url, method = req.full_url, req.method
+      if method == "GET" and "/c/133/show.json" in url:
+        return _mock_response({"category": {"topic_url": "/t/x/700"}})
+      if method == "GET" and url.endswith("/t/700.json"):
+        return _mock_response({"post_stream": {"posts": [{"id": 800}]}})
+      if method == "GET" and url.endswith("/posts/800.json"):
+        return _mock_response({"id": 800, "raw": "matches"})
+      raise AssertionError(f"Unexpected {method} {url}")
+
+    with (
+      patch.dict("os.environ", _ENV, clear=False),
+      patch("sync_to_discourse.ZENSICAL_TOML", toml_path),
+      patch("sync_to_discourse.time") as mock_time,
+      patch("urllib.request.urlopen") as mock_urlopen,
+      patch("sync_to_discourse._body_matches_discourse", return_value=True),
+    ):
+      mock_time.sleep = MagicMock()
+      mock_urlopen.side_effect = side_effect
+      _generate_sidebars(
+        config=config, client=DiscourseClient(config),
+        synced_topics={
+          "getting-started/doc-a.md": 501,
+          "getting-started/doc-b.md": 502,
+        },
+        index_contents={"getting-started/index.md": "Intro.\n"},
+        dry_run=False, verbose=True, stats=stats,
+      )
+
+  assert stats == {"sidebars_updated": 0, "skipped_sidebar_match": 1}
+  print("  PASS: sidebar_skips_update_when_remote_matches")
+
+
+def test_update_topic_skipped_when_metadata_matches():
+  calls: list[tuple[str, str]] = []
+
+  def side_effect(req):
+    url, method = req.full_url, req.method
+    calls.append((method, url))
+    if method == "GET" and "/search.json" in url:
+      return _mock_response({"topics": [{"id": 500, "title": "Doc A"}]})
+    if method == "GET" and url.endswith("/t/500.json"):
+      return _mock_response({
+        "id": 500, "title": "Doc A", "category_id": 133,
+        "post_stream": {"posts": [{"id": 900}]},
+      })
+    if method == "GET" and url.endswith("/posts/900.json"):
+      return _mock_response({"id": 900, "raw": "body-differs"})
+    return _mock_response({"post": {"id": 900}})
+
+  with tempfile.TemporaryDirectory() as tmpdir:
+    docs_dir, toml_path = _build_two_doc_workspace(tmpdir)
+    args = argparse.Namespace(
+      dry_run=False, verbose=True, force=True,
+      only=["getting-started/doc-a.md"],
+    )
+    with patch("sync_to_discourse._body_matches_discourse", return_value=False):
+      _run_sync(tmpdir, docs_dir, toml_path, args, side_effect)
+
+  assert any(m == "PUT" and "/posts/" in u for m, u in calls)
+  assert not any(m == "PUT" and "/t/-/" in u for m, u in calls)
+  print("  PASS: update_topic_skipped_when_metadata_matches")
+
+
+# ---------------------------------------------------------------------------
 # Runner
 # ---------------------------------------------------------------------------
 
@@ -503,6 +697,12 @@ if __name__ == "__main__":
     # Integration
     test_sync_docs_dry_run,
     test_sync_docs_skips_when_discourse_matches,
+    # --only filter + idempotency
+    test_sync_docs_only_filter_restricts_pass2,
+    test_sync_docs_only_filter_warns_on_unknown_path,
+    test_sync_docs_dry_run_counts_match_as_skip_not_update,
+    test_sidebar_skips_update_when_remote_matches,
+    test_update_topic_skipped_when_metadata_matches,
   ]
   passed = 0
   failed = 0

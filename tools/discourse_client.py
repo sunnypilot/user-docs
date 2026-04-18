@@ -298,6 +298,10 @@ class DiscourseClient:
       return None
     return posts[0].get("id")
 
+  def get_topic(self, topic_id: int) -> dict[str, Any] | None:
+    """Fetch topic metadata (title, category_id, post_stream)."""
+    return self._get(f"/t/{topic_id}.json")
+
   def get_post_raw(self, post_id: int) -> str | None:
     """Fetch the current raw markdown content of a post.
 

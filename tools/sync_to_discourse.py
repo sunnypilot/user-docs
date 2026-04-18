@@ -35,7 +35,16 @@ from nav_parser import NavEntry, parse_all
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DOCS_DIR = REPO_ROOT / "docs"
 ZENSICAL_TOML = REPO_ROOT / "zensical.toml"
-GITHUB_REF_NAME = os.environ.get("GITHUB_REF_NAME", "master")
+
+
+# DOCS_SYNC_REF_NAME overrides GITHUB_REF_NAME because GitHub Actions
+# reserves GITHUB_* and ignores step-level env overrides in PR runs.
+def _resolve_ref_name() -> str:
+  return (
+    os.environ.get("DOCS_SYNC_REF_NAME")
+    or os.environ.get("GITHUB_REF_NAME")
+    or "master"
+  )
 
 SKIP_INDEX_FILES = frozenset({"index.md", "README.md"})
 
@@ -94,11 +103,32 @@ def _body_matches_discourse(local_body: str, remote_raw: str | None) -> bool:
   return _normalize(local_body) == _normalize(remote_raw)
 
 
+def _post_body_matches_remote(
+  client: DiscourseClient, post_id: int, local_body: str,
+) -> bool:
+  time.sleep(1.0)
+  return _body_matches_discourse(local_body, client.get_post_raw(post_id))
+
+
+def _topic_metadata_differs(
+  client: DiscourseClient, topic_id: int,
+  new_title: str, new_category_id: int,
+) -> bool:
+  time.sleep(1.0)
+  topic = client.get_topic(topic_id)
+  if topic is None:
+    return True
+  return (
+    (topic.get("title") or "").strip() != new_title.strip()
+    or topic.get("category_id") != new_category_id
+  )
+
+
 def build_footer(doc_path: str) -> str:
   """Build the sync footer with GitHub link and sync ID."""
   gh_url = (
     f"https://github.com/sunnypilot/user-docs/blob/"
-    f"{GITHUB_REF_NAME}/docs/{doc_path}"
+    f"{_resolve_ref_name()}/docs/{doc_path}"
   )
   return (
     "\n\n---\n"
@@ -332,14 +362,6 @@ def _generate_sidebars(
         # Discourse requires at least one paragraph in category descriptions
         combined = f"Browse the **{section_title}** documentation:\n\n{sidebar_content}\n"
 
-      if dry_run:
-        print(
-          f"  [DRY RUN] Would update sidebar: {section_title} "
-          f"(category {category_id}, {len(sidebar_lines)} items)"
-        )
-        stats["sidebars_updated"] += 1
-        continue
-
       about_topic_id = client.get_category_about_topic_id(category_id)
       if about_topic_id is None:
         print(
@@ -354,6 +376,23 @@ def _generate_sidebars(
           f"  FAIL: No first post for sidebar "
           f"About topic {about_topic_id}"
         )
+        continue
+
+      if _post_body_matches_remote(client, post_id, combined):
+        if verbose:
+          print(
+            f"  SKIP sidebar (discourse up-to-date): "
+            f"{section_title} (category {category_id})"
+          )
+        stats["skipped_sidebar_match"] += 1
+        continue
+
+      if dry_run:
+        print(
+          f"  [DRY RUN] Would update sidebar: {section_title} "
+          f"(category {category_id}, {len(sidebar_lines)} items)"
+        )
+        stats["sidebars_updated"] += 1
         continue
 
       time.sleep(1.0)
@@ -458,32 +497,52 @@ def sync_docs(args: argparse.Namespace) -> None:
   client = DiscourseClient(config)
   cache = ContentCache()
 
-  entries = parse_all(ZENSICAL_TOML)
+  all_entries = parse_all(ZENSICAL_TOML)
+
+  raw_only = getattr(args, "only", None)
+  only_paths = {p.strip() for p in raw_only if p.strip()} if raw_only else None
+
+  if only_paths is not None:
+    entries = [e for e in all_entries if e.path in only_paths]
+    missing = sorted(only_paths - {e.path for e in all_entries})
+    if missing:
+      print(f"  WARN: --only paths not in zensical.toml, ignoring: {missing}")
+  else:
+    entries = all_entries
+
+  # Sidebar gen requires the full index_contents map; filtered runs skip it.
+  skip_sidebars = only_paths is not None
 
   stats: dict[str, int] = {
     "total": len(entries),
     "created": 0,
     "updated": 0,
-    "updated_index": 0,
     "skipped_cached": 0,
     "skipped_discourse_match": 0,
     "skipped_no_category": 0,
     "failed": 0,
     "sidebars_updated": 0,
+    "skipped_sidebar_match": 0,
+    "skipped_metadata_match": 0,
   }
 
   # Store converted index.md content for sidebar combination
   index_contents: dict[str, str] = {}
 
-  print(f"Sync: {len(entries)} entries from zensical.toml")
+  filter_note = f" (filtered to {len(entries)} of {len(all_entries)})" if only_paths else ""
+  print(f"Sync: {len(entries)} entries from zensical.toml{filter_note}")
   print(f"  Discourse: {config.base_url}")
   print(f"  Dry run: {args.dry_run}")
   print(f"  Force: {args.force}")
+  if only_paths is not None:
+    print(f"  Only: {sorted(only_paths)}")
   print()
 
   # --- Pass 1: Resolve all topic IDs ---
+  # Resolve the full nav so link rewriting and sidebar lookups still work
+  # when the caller supplied a subset via --only.
   synced_topics = _resolve_all_topic_ids(
-    entries, config=config, client=client, verbose=args.verbose,
+    all_entries, config=config, client=client, verbose=args.verbose,
   )
 
   # --- Pass 2: Convert and push ---
@@ -536,68 +595,11 @@ def sync_docs(args: argparse.Namespace) -> None:
     )
 
     if is_about_topic:
-      # Index files update the "About" topic for their category.
-      # Each index.md maps to the most specific matching category
-      # (e.g. features/cruise/index.md -> sub-category 140).
-      about_topic_id = synced_topics.get(entry.path)
-      if args.dry_run:
-        if about_topic_id is not None:
-          print(
-            f"  [DRY RUN] Would update index: {label}\n"
-            f"            -> About topic {about_topic_id} "
-            f"(category {category_id})\n"
-            f"            -> {config.base_url}/t/{about_topic_id}"
-          )
-        else:
-          print(
-            f"  [DRY RUN] WARN: No About topic for "
-            f"category {category_id}: {label}"
-          )
-        stats["updated_index"] += 1
-      else:
-        if about_topic_id is None:
-          print(
-            f"  FAIL: No About topic for "
-            f"category {category_id}: {label}"
-          )
-          stats["failed"] += 1
-          continue
-
-        post_id = client.first_post_id(about_topic_id)
-        if post_id is None:
-          print(
-            f"  FAIL: No first post for "
-            f"About topic {about_topic_id}: {label}"
-          )
-          stats["failed"] += 1
-          continue
-
-        time.sleep(1.0)
-        current_raw = client.get_post_raw(post_id)
-        if _body_matches_discourse(body, current_raw):
-          if args.verbose:
-            print(f"  SKIP (discourse up-to-date): {label}")
-          stats["skipped_discourse_match"] += 1
-          cache.save(entry.path, raw_content)
-          continue
-
-        time.sleep(1.0)
-        result = client.update_post(
-          post_id, body,
-          edit_reason="Docs sync: index page",
-        )
-        if result is None:
-          print(
-            f"  FAIL: Could not update "
-            f"About topic {about_topic_id}: {label}"
-          )
-          stats["failed"] += 1
-          continue
-
-        print(f"  Updated index: {label} -> About topic {about_topic_id}")
-        stats["updated_index"] += 1
-
-      # Update cache for index pages
+      # About topics are owned by _generate_sidebars (body + sidebar lines).
+      # Updating here would be clobbered and the body-only idempotency check
+      # would always diverge on the sidebar block.
+      if args.verbose:
+        print(f"  DEFER to sidebar gen: {label}")
       if not args.dry_run:
         cache.save(entry.path, raw_content)
       continue
@@ -606,6 +608,20 @@ def sync_docs(args: argparse.Namespace) -> None:
     topic_id = synced_topics.get(entry.path)
 
     if topic_id is not None:
+      post_id = client.first_post_id(topic_id)
+      if post_id is None:
+        print(f"  FAIL: No first post for topic {topic_id}: {label}")
+        stats["failed"] += 1
+        continue
+
+      if _post_body_matches_remote(client, post_id, body):
+        if args.verbose:
+          print(f"  SKIP (discourse up-to-date): {label}")
+        stats["skipped_discourse_match"] += 1
+        if not args.dry_run:
+          cache.save(entry.path, raw_content)
+        continue
+
       if args.dry_run:
         print(
           f"  [DRY RUN] Would update: {label}\n"
@@ -615,21 +631,6 @@ def sync_docs(args: argparse.Namespace) -> None:
         )
         stats["updated"] += 1
       else:
-        post_id = client.first_post_id(topic_id)
-        if post_id is None:
-          print(f"  FAIL: No first post for topic {topic_id}: {label}")
-          stats["failed"] += 1
-          continue
-
-        time.sleep(1.0)
-        current_raw = client.get_post_raw(post_id)
-        if _body_matches_discourse(body, current_raw):
-          if args.verbose:
-            print(f"  SKIP (discourse up-to-date): {label}")
-          stats["skipped_discourse_match"] += 1
-          cache.save(entry.path, raw_content)
-          continue
-
         time.sleep(1.0)
         result = client.update_post(
           post_id, body,
@@ -640,12 +641,11 @@ def sync_docs(args: argparse.Namespace) -> None:
           stats["failed"] += 1
           continue
 
-        # Update topic title and category
-        time.sleep(1.0)
-        client.update_topic(
-          topic_id, title,
-          category_id=category_id,
-        )
+        if _topic_metadata_differs(client, topic_id, title, category_id):
+          time.sleep(1.0)
+          client.update_topic(topic_id, title, category_id=category_id)
+        else:
+          stats["skipped_metadata_match"] += 1
 
         print(f"  Updated: {label} -> topic {topic_id}")
         stats["updated"] += 1
@@ -660,6 +660,22 @@ def sync_docs(args: argparse.Namespace) -> None:
         found_id = existing_by_title["id"]
         synced_topics[entry.path] = found_id
 
+        post_id = client.first_post_id(found_id)
+        if post_id is None:
+          print(
+            f"  FAIL: No first post for topic {found_id}: {label}"
+          )
+          stats["failed"] += 1
+          continue
+
+        if _post_body_matches_remote(client, post_id, body):
+          if args.verbose:
+            print(f"  SKIP (discourse up-to-date): {label}")
+          stats["skipped_discourse_match"] += 1
+          if not args.dry_run:
+            cache.save(entry.path, raw_content)
+          continue
+
         if args.dry_run:
           print(
             f"  [DRY RUN] Would update (found by title): "
@@ -670,23 +686,6 @@ def sync_docs(args: argparse.Namespace) -> None:
           )
           stats["updated"] += 1
         else:
-          post_id = client.first_post_id(found_id)
-          if post_id is None:
-            print(
-              f"  FAIL: No first post for topic {found_id}: {label}"
-            )
-            stats["failed"] += 1
-            continue
-
-          time.sleep(1.0)
-          current_raw = client.get_post_raw(post_id)
-          if _body_matches_discourse(body, current_raw):
-            if args.verbose:
-              print(f"  SKIP (discourse up-to-date): {label}")
-            stats["skipped_discourse_match"] += 1
-            cache.save(entry.path, raw_content)
-            continue
-
           time.sleep(1.0)
           result = client.update_post(
             post_id, body,
@@ -699,11 +698,11 @@ def sync_docs(args: argparse.Namespace) -> None:
             stats["failed"] += 1
             continue
 
-          time.sleep(1.0)
-          client.update_topic(
-            found_id, title,
-            category_id=category_id,
-          )
+          if _topic_metadata_differs(client, found_id, title, category_id):
+            time.sleep(1.0)
+            client.update_topic(found_id, title, category_id=category_id)
+          else:
+            stats["skipped_metadata_match"] += 1
 
           print(
             f"  Updated (found by title): {label} -> topic {found_id}"
@@ -740,16 +739,15 @@ def sync_docs(args: argparse.Namespace) -> None:
 
   # --- Sidebar generation ---
   print()
-  print("Generating sidebars...")
-  _generate_sidebars(
-    config=config,
-    client=client,
-    synced_topics=synced_topics,
-    index_contents=index_contents,
-    dry_run=args.dry_run,
-    verbose=args.verbose,
-    stats=stats,
-  )
+  if skip_sidebars:
+    print("Skipping sidebar generation (filtered run)")
+  else:
+    print("Generating sidebars...")
+    _generate_sidebars(
+      config=config, client=client, synced_topics=synced_topics,
+      index_contents=index_contents, dry_run=args.dry_run,
+      verbose=args.verbose, stats=stats,
+    )
 
   # --- Summary ---
   print()
@@ -759,12 +757,13 @@ def sync_docs(args: argparse.Namespace) -> None:
   print(f"  Total Parsed:          {stats['total']}")
   print(f"  Created:               {stats['created']}")
   print(f"  Updated (Normal):      {stats['updated']}")
-  print(f"  Updated (Index):       {stats['updated_index']}")
   print(f"  Skipped (Cached):      {stats['skipped_cached']}")
   print(f"  Skipped (Discourse Match): {stats['skipped_discourse_match']}")
+  print(f"  Skipped (Metadata Match):  {stats['skipped_metadata_match']}")
   print(f"  Skipped (No Category): {stats['skipped_no_category']}")
   print(f"  Failed:                {stats['failed']}")
   print(f"  Sidebars Updated:      {stats['sidebars_updated']}")
+  print(f"  Sidebars Skipped (Match):  {stats['skipped_sidebar_match']}")
   print("=" * 60)
 
   if stats["failed"] > 0:
@@ -776,6 +775,10 @@ def main() -> None:
   parser.add_argument("--dry-run", action="store_true", help="Preview changes without making API calls.")
   parser.add_argument("--verbose", "-v", action="store_true", help="Print detailed progress for skipped entries.")
   parser.add_argument("--force", action="store_true", help="Bypass content cache and re-sync all entries.")
+  parser.add_argument(
+    "--only", nargs="+", metavar="PATH",
+    help="Restrict Pass 2 to these doc paths; skips sidebar gen.",
+  )
   args = parser.parse_args()
   sync_docs(args)
 
