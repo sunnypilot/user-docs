@@ -184,12 +184,14 @@ jobs:
         run: |
           CREATED=$(grep -oP 'Created:\s+\K\d+' sync_preview.txt || echo "0")
           UPDATED=$(grep -oP 'Updated \(Normal\):\s+\K\d+' sync_preview.txt || echo "0")
-          UPDATED_IDX=$(grep -oP 'Updated \(Index\):\s+\K\d+' sync_preview.txt || echo "0")
           SIDEBARS=$(grep -oP 'Sidebars Updated:\s+\K\d+' sync_preview.txt || echo "0")
           FAILED=$(grep -oP 'Failed:\s+\K\d+' sync_preview.txt || echo "0")
           TOTAL=$(grep -oP 'Total Parsed:\s+\K\d+' sync_preview.txt || echo "0")
 
-          CHANGES=$((CREATED + UPDATED + UPDATED_IDX))
+          # Sidebar updates include every About topic (index.md) that
+          # actually differs from Discourse, so they count toward the
+          # "modified" total.
+          CHANGES=$((CREATED + UPDATED + SIDEBARS))
 
           {
             echo 'body<<COMMENT_EOF'
@@ -197,18 +199,14 @@ jobs:
             echo ""
             if [ "$ANY_CHANGE" != "1" ]; then
               echo "No documentation or sync tooling changes detected. No forum topic changes needed."
-            elif [ "$CHANGES" -eq 0 ] && [ "$SIDEBARS" -eq 0 ]; then
+            elif [ "$CHANGES" -eq 0 ]; then
               echo "Docs are up to date. No forum topic changes needed."
             else
               SUFFIX="of ${TOTAL} total"
               if [ -n "${{ steps.diff.outputs.only_args }}" ] && [ -z "${{ steps.diff.outputs.structural }}" ]; then
                 SUFFIX="(filtered to ${DOC_COUNT} PR-changed doc(s))"
               fi
-              echo "**${CHANGES} topic(s) would be modified** (${CREATED} created, $((UPDATED + UPDATED_IDX)) updated) ${SUFFIX}."
-              if [ "$SIDEBARS" -gt 0 ]; then
-                echo ""
-                echo "**${SIDEBARS} sidebar(s)** would be regenerated."
-              fi
+              echo "**${CHANGES} topic(s) would be modified** (${CREATED} created, ${UPDATED} updated, ${SIDEBARS} index/sidebar) ${SUFFIX}."
             fi
             if [ "$FAILED" -ne 0 ]; then
               echo ""

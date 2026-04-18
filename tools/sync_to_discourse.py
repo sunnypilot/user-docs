@@ -596,7 +596,6 @@ def sync_docs(args: argparse.Namespace) -> None:
     "total": len(entries),
     "created": 0,
     "updated": 0,
-    "updated_index": 0,
     "skipped_cached": 0,
     "skipped_discourse_match": 0,
     "skipped_no_category": 0,
@@ -680,71 +679,21 @@ def sync_docs(args: argparse.Namespace) -> None:
     )
 
     if is_about_topic:
-      # Index files update the "About" topic for their category.
-      # Each index.md maps to the most specific matching category
-      # (e.g. features/cruise/index.md -> sub-category 140).
-      about_topic_id = synced_topics.get(entry.path)
-
-      if about_topic_id is None:
-        if args.dry_run:
-          print(
-            f"  [DRY RUN] WARN: No About topic for "
-            f"category {category_id}: {label}"
-          )
-          stats["updated_index"] += 1
-        else:
-          print(
-            f"  FAIL: No About topic for "
-            f"category {category_id}: {label}"
-          )
-          stats["failed"] += 1
-        continue
-
-      post_id = client.first_post_id(about_topic_id)
-      if post_id is None:
+      # Index pages are rendered by _generate_sidebars, which appends
+      # the sidebar list after the converted body.  Updating the About
+      # topic here with just body+footer would be overwritten by the
+      # sidebar pass immediately after, and the pre-update idempotency
+      # check would always see a mismatch (remote has sidebar lines,
+      # local doesn't), double-counting every index as "Would update".
+      # Defer the update to sidebar generation — it holds the authoritative
+      # combined body.
+      if args.verbose:
         print(
-          f"  FAIL: No first post for "
-          f"About topic {about_topic_id}: {label}"
+          f"  DEFER to sidebar gen: {label} "
+          f"(about topic {synced_topics.get(entry.path)})"
         )
-        stats["failed"] += 1
-        continue
-
-      if _post_body_matches_remote(
-        client, post_id, body, debug_label=f"index {label}",
-      ):
-        if args.verbose:
-          print(f"  SKIP (discourse up-to-date): {label}")
-        stats["skipped_discourse_match"] += 1
-        if not args.dry_run:
-          cache.save(entry.path, raw_content)
-        continue
-
-      if args.dry_run:
-        print(
-          f"  [DRY RUN] Would update index: {label}\n"
-          f"            -> About topic {about_topic_id} "
-          f"(category {category_id})\n"
-          f"            -> {config.base_url}/t/{about_topic_id}"
-        )
-        stats["updated_index"] += 1
-        continue
-
-      time.sleep(1.0)
-      result = client.update_post(
-        post_id, body,
-        edit_reason="Docs sync: index page",
-      )
-      if result is None:
-        print(
-          f"  FAIL: Could not update "
-          f"About topic {about_topic_id}: {label}"
-        )
-        stats["failed"] += 1
-        continue
-
-      print(f"  Updated index: {label} -> About topic {about_topic_id}")
-      stats["updated_index"] += 1
-      cache.save(entry.path, raw_content)
+      if not args.dry_run:
+        cache.save(entry.path, raw_content)
       continue
 
     # --- Normal doc: find or create ---
@@ -923,7 +872,6 @@ def sync_docs(args: argparse.Namespace) -> None:
   print(f"  Total Parsed:          {stats['total']}")
   print(f"  Created:               {stats['created']}")
   print(f"  Updated (Normal):      {stats['updated']}")
-  print(f"  Updated (Index):       {stats['updated_index']}")
   print(f"  Skipped (Cached):      {stats['skipped_cached']}")
   print(f"  Skipped (Discourse Match): {stats['skipped_discourse_match']}")
   print(f"  Skipped (Metadata Match):  {stats['skipped_metadata_match']}")
