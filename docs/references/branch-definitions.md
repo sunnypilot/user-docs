@@ -1,6 +1,7 @@
 |Branch | Definition | Supported Devices | Description | Stability/Readiness|
 |:-: | --- | --- | --- | ---|
-|`release-tizi` | Release branch | comma 3X | Stable release branch. After testing on `staging`, updates are pushed here and published publicly. | **Ready to Use:** Highly stable, recommended for most users.|
+|`release-mici` | Release branch | comma four | Stable release branch for comma four. After testing on `staging`, updates are pushed here and published publicly. | **Ready to Use:** Highly stable, recommended for most users with comma four.|
+|`release-tizi` | Release branch | comma 3X | Stable release branch for comma 3X. After testing on `staging`, updates are pushed here and published publicly. | **Ready to Use:** Highly stable, recommended for most users with comma 3X.|
 |`staging` | Staging branch | comma four/3X | Pre-release testing branch. Community feedback is essential to identify issues before public release. | **Varied Stability:** Generally stable, but intended for testing before public release.|
 |`dev` | Development branch | comma four/3X | Experimental branch with the latest features and bug fixes brought in manually. Expect bugs and breaking changes. | **Experimental:** Least stable, suitable for testers and developers.|
 |`master` | Primary development branch | comma four/3X | All Pull Requests are merged here for future releases. CI automatically strips, minifies, and pushes changes to `staging`. Running the `master` branch is suitable for development purposes but not recommended for non-development use. | **For Development Use:** Suitable for developers, may be unstable for general use.|
