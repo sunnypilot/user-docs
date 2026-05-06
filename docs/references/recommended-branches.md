@@ -6,11 +6,11 @@
 > \[!note\] comma four (C4/MICI)
 
 > 
-> | Branch | Installation URL | Change Logs |
-> |:---:|----|----|
-> | ~~`release-mici`~~ | ***Coming Soon*** | ***Coming Soon*** |
-> | `staging` | `staging.sunnypilot.ai` | [CHANGELOG](https://github.com/sunnyhaibin/sunnypilot/blob/dev/CHANGELOG.md) |
-> | `dev` | `dev.sunnypilot.ai` | [CHANGELOG](https://github.com/sunnyhaibin/sunnypilot/blob/dev/CHANGELOG.md) |
+> |      Branch      | Installation URL                     | Change Logs                                                                           |
+> |:----------------:|--------------------------------------|---------------------------------------------------------------------------------------|
+> | `release-mici` | `install.sunnypilot.ai/release-mici` | [CHANGELOG](https://github.com/sunnyhaibin/sunnypilot/blob/release-mici/CHANGELOG.md) |
+> |    `staging`     | `staging.sunnypilot.ai`              | [CHANGELOG](https://github.com/sunnyhaibin/sunnypilot/blob/staging/CHANGELOG.md)      |
+> |      `dev`       | `dev.sunnypilot.ai`                  | [CHANGELOG](https://github.com/sunnyhaibin/sunnypilot/blob/dev/CHANGELOG.md)          |
 
 > \[!note\] comma 3X (C3X/TIZI)
 
