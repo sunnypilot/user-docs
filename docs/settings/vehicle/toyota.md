@@ -43,7 +43,7 @@ Toyota and Lexus vehicles with a Zorro Steering Sensor installed gain higher-res
 !!! warning "SecOC Exclusion"
     ZSS is not compatible with SecOC-equipped Toyota/Lexus vehicles (newer models with secure CAN authentication). These vehicles are automatically excluded during fingerprinting.
 
-See the [Zorro Steering Sensor (ZSS)](../../how-to/zorro-steering-sensor.md) guide for details.
+See the [Zorro Steering Sensor (ZSS)](../../technical/zorro-steering-sensor.md) guide for details.
 
 ---
 
